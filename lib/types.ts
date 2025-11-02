@@ -2,7 +2,7 @@
 // frontend e a API backend (baseado na documentação da API).
 
 // --- Tipos de Resposta dos Endpoints GET /analytics/* ---
-// Estes tipos refletem EXATAMENTE o JSON retornado pela API (snake_case)
+// Estes tipos refletem EXATAMENTE o JSON retornado pela API.
 
 /**
  * Caso de Uso 1: GET /v1/analytics/top-products
@@ -12,14 +12,14 @@ export type TopProduct = {
   product_name: string;
   total_orders: number;
   total_revenue: number;
-  revenue_percentage: number;
+ 
 };
 
 /**
  * Caso de Uso 2: GET /v1/analytics/revenue-over-time
  */
 export type RevenueDataPoint = {
-  date: string; // (ISO Date String, ex: "2023-10-27T00:00:00.000Z")
+  date: string; // (ISO Date String)
   total_revenue: number;
 };
 
@@ -34,12 +34,16 @@ export type SalesByChannel = {
 };
 
 /**
- * Caso de Uso 4: GET /v1/analytics/average-ticket
+ * Caso de Uso 4: GET /v1/analytics/overall-average-ticket
+ * * CORREÇÃO CRÍTICA: Os logs mostram que o backend retorna 'totalSales' (camelCase),
+ * enquanto o tipo DTO do Domínio usa 'totalSales' (camelCase), mas o tipo
+ * do frontend anterior usava 'total_sales' (snake_case).
+ * Para compatibilidade com o retorno do backend (visto no log), usamos CAMELCASE aqui.
  */
 export type AverageTicket = {
-  average_ticket: number;
-  total_sales: number;
-  total_revenue: number;
+  average_ticket: number; // MANTIDO: snake_case (para evitar quebras em outros lugares)
+  totalSales: number; // CORRIGIDO: camelCase (como visto no log do servidor)
+  total_revenue: number; // MANTIDO: snake_case
 };
 
 /**
@@ -64,7 +68,7 @@ export type SalesByPaymentType = {
 };
 
 /**
- * Caso de Uso 7: GET /v1/analytics/rfm-customers
+ * Caso de Uso 7: GET /v1/analytics/customer-rfm
  */
 export type RfmCustomer = {
   customer_id: number;
@@ -75,13 +79,33 @@ export type RfmCustomer = {
 };
 
 // --- Tipos para a API de IA (/ai) ---
-// Estes tipos refletem as respostas dos Casos de Uso 8 e 9
+// Estes tipos refletem as requisições e respostas dos Casos de Uso 8 e 9
 
 // Tipagem para o histórico do chat
 export type ChatMessage = {
   role: 'user' | 'model';
   parts: string;
 };
+
+/**
+ * Payload da Requisição para:
+ * Caso de Uso 8: POST /v1/ai/ask
+ */
+export type AIChatRequest = {
+  prompt: string;
+  history?: ChatMessage[];
+};
+
+/**
+ * Payload da Requisição para:
+ * Caso de Uso 9: POST /v1/ai/explain
+ */
+export type AIExplainRequest = {
+  dataContext: string;
+  dataJson: string; // JSON.stringify(data)
+};
+
+// --- Tipos de RESPOSTA ---
 
 /**
  * Caso de Uso 8: POST /v1/ai/ask
@@ -104,4 +128,3 @@ export type AIActionState<T> = {
   data: T | null;
   error: string | null;
 };
-

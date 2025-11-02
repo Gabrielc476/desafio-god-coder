@@ -6,18 +6,18 @@ import {
   SalesHeatmapPoint,
   SalesByPaymentType,
   RfmCustomer,
-  // CORREÇÃO: Removido 'PageSearchParams' que não estava sendo exportado
 } from './types';
 
 // A URL base da nossa API Backend (Node.js)
 // Em produção, isso viria de uma variável de ambiente (process.env.BACKEND_API_URL)
-const BASE_URL = 'http://localhost:3333/v1';
+// CORREÇÃO: Adicionado o prefixo '/api'
+const BASE_URL = 'http://localhost:3333/api/v1';
 
 /**
  * Função genérica para buscar dados da nossa API interna.
  * Esta função SÓ DEVE ser chamada do lado do servidor (RSCs, Server Actions).
  *
- * @param path O caminho do endpoint da API (ex: "/analytics/revenue")
+ * @param path O caminho do endpoint da API (ex: "/analytics/revenue-over-time")
  * @param params Um objeto de URLSearchParams para adicionar à query string
  * @returns A resposta JSON parseada e tipada
  */
@@ -27,7 +27,8 @@ async function fetchFromApi<T>(
 ): Promise<T> {
   const url = `${BASE_URL}${path}?${params.toString()}`;
 
-  console.log(`[API Fetch] ${url}`); // Log para debug no servidor
+  // Log para debug no servidor
+  console.log(`[API Fetch] ${url}`);
 
   try {
     const response = await fetch(url, {
@@ -45,11 +46,14 @@ async function fetchFromApi<T>(
       );
     }
 
-    return response.json() as T;
+    const data: T = await response.json();
+    // NOVO LOG: Mostra os dados retornados no console do SERVIDOR
+    console.log(`[API Success] ${path}:`, data);
+    
+    return data;
   } catch (error) {
+    // Este erro acontece se o fetch falhar (backend crashou ou não está rodando)
     console.error(`[API Fetch Failed] ${error}`);
-    // Em um app real, poderíamos ter um sistema de 'Error Boundary'
-    // Para Server Components, o Next.js usará o 'error.tsx' mais próximo.
     throw new Error(`Erro de rede ou conexão ao buscar: ${url}`);
   }
 }
@@ -58,43 +62,70 @@ async function fetchFromApi<T>(
 
 /**
  * Pega o 'from' e 'to' da URL (searchParams) e retorna datas válidas.
- * Se não houver, retorna o default (últimos 30 dias).
+ * Se não houver, retorna o default (últimos 30 dias dos dados de amostra).
+ *
+ * CORREÇÃO (Next.js 16): Esta função agora é responsável por
+ * "desembrulhar" (unwrap) os searchParams.
  */
-function parseDateRange(
-  // CORREÇÃO: Usando o tipo explícito ao invés do 'PageSearchParams'
-  searchParams: { [key: string]: string | undefined }
-) {
-  // CORREÇÃO: Trocado 'let' por 'const' (ESLint)
-  const { from, to } = searchParams;
+function parseDateRange(searchParams: {
+  [key: string]: string | string[] | undefined;
+}) {
+  // 1. Extrai 'from' e 'to' com segurança
+  const params = searchParams || {};
+  const from = Array.isArray(params.from) ? params.from[0] : params.from;
+  const to = Array.isArray(params.to) ? params.to[0] : params.to;
 
-  if (!from || !to) {
-    const toDate = new Date();
-    const fromDate = new Date();
-    fromDate.setDate(toDate.getDate() - 30); // Default: 30 dias atrás
-
-    return {
-      from: fromDate.toISOString().split('T')[0], // YYYY-MM-DD
-      to: toDate.toISOString().split('T')[0], // YYYY-MM-DD
-    };
+  // 2. Se o usuário FILTROU (ex: usou o DatePicker), usa as datas da URL
+  if (from && to) {
+    return { from, to };
   }
-  return { from, to };
+
+  // 3. DEFAULT (Se não houver filtro na URL)
+  // CORREÇÃO: Usar 30 de Outubro de 2025 como data final padrão
+  // (baseado no DADOS.md)
+  const toDate = new Date('2025-10-31T00:00:00Z'); // 31 (para incluir 30)
+  const fromDate = new Date('2025-10-02T00:00:00Z'); // 02 (para incluir 01)
+
+  // Log para debug
+  console.log(
+    `[API Date] Usando datas DEFAULT: ${fromDate.toISOString().split('T')[0]} a ${toDate.toISOString().split('T')[0]}`
+  );
+
+  return {
+    from: fromDate.toISOString().split('T')[0], // YYYY-MM-DD
+    to: toDate.toISOString().split('T')[0], // YYYY-MM-DD
+  };
 }
 
 // --- SDK da API de Analytics (Casos de Uso 1-7) ---
 
 /**
- * CU 1: Receita Total, Pedidos Totais, Ticket Médio
+ * CU 1: Receita por Tempo
  */
-async function getRevenueAnalytics(dates: { from: string; to: string }) {
-  const params = new URLSearchParams(dates);
-  return fetchFromApi<RevenueDataPoint[]>('/analytics/revenue-over-time', params);
+async function getRevenueOverTime(
+  dates: { from: string; to: string },
+  groupBy: 'day' | 'hour'
+) {
+  const params = new URLSearchParams({
+    startDate: dates.from, // Envia 'startDate'
+    endDate: dates.to, // Envia 'endDate'
+    groupBy,
+  });
+  return fetchFromApi<RevenueDataPoint[]>(
+    '/analytics/revenue-over-time',
+    params
+  );
 }
 
 /**
- * CU 2: Top 5 Produtos
+ * CU 2: Top Produtos
  */
-async function getTopProducts(dates: { from: string; to: string }) {
-  const params = new URLSearchParams(dates);
+async function getTopProducts(dates: { from: string; to: string }, limit = 100) {
+  const params = new URLSearchParams({
+    startDate: dates.from, // Envia 'startDate'
+    endDate: dates.to, // Envia 'endDate'
+    limit: String(limit),
+  });
   return fetchFromApi<TopProduct[]>('/analytics/top-products', params);
 }
 
@@ -102,24 +133,37 @@ async function getTopProducts(dates: { from: string; to: string }) {
  * CU 3: Vendas por Canal
  */
 async function getSalesByChannel(dates: { from: string; to: string }) {
-  const params = new URLSearchParams(dates);
+  const params = new URLSearchParams({
+    startDate: dates.from, // Envia 'startDate'
+    endDate: dates.to, // Envia 'endDate'
+  });
   return fetchFromApi<SalesByChannel[]>('/analytics/sales-by-channel', params);
 }
 
 /**
  * CU 4: Ticket Médio (Geral)
- * Nota: O backend retorna um objeto, não um array
+ * ROTA CORRIGIDA: /overall-average-ticket
  */
 async function getAverageTicket(dates: { from: string; to: string }) {
-  const params = new URLSearchParams(dates);
-  return fetchFromApi<AverageTicket>('/analytics/average-ticket', params);
+  const params = new URLSearchParams({
+    startDate: dates.from, // Envia 'startDate'
+    endDate: dates.to, // Envia 'endDate'
+  });
+  // CORREÇÃO: Endpoint corrigido de 'average_ticket'
+  return fetchFromApi<AverageTicket>(
+    '/analytics/overall-average-ticket',
+    params
+  );
 }
 
 /**
  * CU 5: Mapa de Calor (Vendas por Hora/Canal)
  */
 async function getSalesHeatmap(dates: { from: string; to: string }) {
-  const params = new URLSearchParams(dates);
+  const params = new URLSearchParams({
+    startDate: dates.from, // Envia 'startDate'
+    endDate: dates.to, // Envia 'endDate'
+  });
   return fetchFromApi<SalesHeatmapPoint[]>('/analytics/sales-heatmap', params);
 }
 
@@ -127,7 +171,10 @@ async function getSalesHeatmap(dates: { from: string; to: string }) {
  * CU 6: Vendas por Tipo de Pagamento
  */
 async function getSalesByPaymentType(dates: { from: string; to: string }) {
-  const params = new URLSearchParams(dates);
+  const params = new URLSearchParams({
+    startDate: dates.from, // Envia 'startDate'
+    endDate: dates.to, // Envia 'endDate'
+  });
   return fetchFromApi<SalesByPaymentType[]>(
     '/analytics/sales-by-payment-type',
     params
@@ -138,14 +185,18 @@ async function getSalesByPaymentType(dates: { from: string; to: string }) {
  * CU 7: Análise RFM de Clientes
  */
 async function getRfmCustomers(dates: { from: string; to: string }) {
-  const params = new URLSearchParams(dates);
-  return fetchFromApi<RfmCustomer[]>('/analytics/rfm-customers', params);
+  const params = new URLSearchParams({
+    startDate: dates.from, // Envia 'startDate'
+    endDate: dates.to, // Envia 'endDate'
+  });
+  // CORREÇÃO: Endpoint corrigido para 'customer-rfm'
+  return fetchFromApi<RfmCustomer[]>('/analytics/customer-rfm', params);
 }
 
 // Exporta o objeto 'api' para ser usado nos Server Components
 export const api = {
   parseDateRange,
-  getRevenueAnalytics,
+  getRevenueOverTime,
   getTopProducts,
   getSalesByChannel,
   getAverageTicket,
@@ -153,4 +204,3 @@ export const api = {
   getSalesByPaymentType,
   getRfmCustomers,
 };
-

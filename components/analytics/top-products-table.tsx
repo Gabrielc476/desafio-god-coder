@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -13,9 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { TopProduct } from '@/lib/types'; // Importa o tipo correto
+import { TopProduct } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { ExplainDataButton } from './explain-data-button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TopProductsTableProps {
   products: TopProduct[];
@@ -30,23 +33,38 @@ const formatCurrency = (value: number) => {
 };
 
 export function TopProductsTable({ products }: TopProductsTableProps) {
-  // Prepara os dados para a IA usando o contrato snake_case da API
-  const dataContext = `Estes são os meus 5 produtos mais vendidos no período selecionado, ordenados por receita.`;
+  // CORREÇÃO (TypeError: ...toFixed):
+  // Calculamos o total da receita AQUI para encontrar a porcentagem
+  const totalRevenueAllProducts = products.reduce(
+    (acc, p) => acc + p.total_revenue,
+    0
+  );
+
+  // Prepara os dados para a IA
+  const dataContext = `Estes são os meus produtos mais vendidos no período selecionado, ordenados por receita.`;
   const dataJson = JSON.stringify(
-    products.map((p) => ({
-      // CORREÇÃO: Usando snake_case, conforme lib/types.ts
-      nome: p.product_name,
-      receita: p.total_revenue,
-      pedidos: p.total_orders,
-      percentualReceita: `${p.revenue_percentage.toFixed(1)}%`,
-    }))
+    products.map((p) => {
+      // CORREÇÃO: Calculamos o % aqui
+      const revenuePercentage =
+        totalRevenueAllProducts > 0
+          ? (p.total_revenue / totalRevenueAllProducts) * 100
+          : 0;
+
+      return {
+        // CORREÇÃO: Ajustando para camelCase (baseado nos logs [API Success])
+        nome: p.product_name,
+        receita: p.total_revenue,
+        pedidos: p.total_orders,
+        percentualReceita: `${revenuePercentage.toFixed(1)}%`,
+      };
+    })
   );
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
-          <CardTitle>Top 5 Produtos</CardTitle>
+          <CardTitle>Top Produtos</CardTitle>
           <CardDescription>
             Os produtos que mais geraram receita no período.
           </CardDescription>
@@ -54,6 +72,7 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
         <ExplainDataButton
           dataContext={dataContext}
           dataJson={dataJson}
+          
         />
       </CardHeader>
       <CardContent>
@@ -69,33 +88,61 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
           <TableBody>
             {products.length === 0 && (
               <TableRow>
-                {/* CORREÇÃO: colSpan 4 */}
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={4}
+                  className="py-4 text-center text-muted-foreground"
+                >
                   Nenhum produto encontrado no período.
                 </TableCell>
               </TableRow>
             )}
-            {products.map((product) => (
-              // CORREÇÃO: Usando snake_case de lib/types.ts
-              <TableRow key={product.product_id}>
-                <TableCell className="font-medium">
-                  {product.product_name}
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(product.total_revenue)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {product.total_orders}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Badge variant="secondary">
-                    {product.revenue_percentage.toFixed(1)}%
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
+            {products.map((product) => {
+              // CORREÇÃO: Calculamos o % aqui TAMBÉM para exibição
+              const revenuePercentage =
+                totalRevenueAllProducts > 0
+                  ? (product.total_revenue / totalRevenueAllProducts) * 100
+                  : 0;
+
+              return (
+                // CORREÇÃO: Ajustando para camelCase (baseado nos logs [API Success])
+                <TableRow key={product.product_id}>
+                  <TableCell className="font-medium">{product.product_name}</TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(product.total_revenue)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {product.total_orders}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant="secondary">
+                      {revenuePercentage.toFixed(1)}%
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Componente de Skeleton para a tabela
+export function TopProductsTableLoader() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-4 w-48" />
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+        </div>
       </CardContent>
     </Card>
   );
