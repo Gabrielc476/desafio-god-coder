@@ -8,10 +8,10 @@
  * Caso de Uso 1: GET /v1/analytics/top-products
  */
 export type TopProduct = {
-  product_id: number;
-  product_name: string;
-  total_orders: number;
-  total_revenue: number;
+  productId: number;
+  name: string;
+  totalSold: number;
+  totalRevenue: number;
  
 };
 
@@ -20,7 +20,7 @@ export type TopProduct = {
  */
 export type RevenueDataPoint = {
   date: string; // (ISO Date String)
-  total_revenue: number;
+  totalRevenue: number;
 };
 
 /**

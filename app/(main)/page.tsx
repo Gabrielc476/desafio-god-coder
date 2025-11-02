@@ -68,7 +68,7 @@ async function DashboardData({
   // 2. Cálculo de KPIs agregados
   // CORREÇÃO: Certifique-se de que revenueOverTime não é undefined
   const totalRevenue = (revenueOverTime || []).reduce(
-    (sum, item) => sum + (item.total_revenue || 0),
+    (sum, item) => sum + (item.totalRevenue || 0),
     0
   );
 

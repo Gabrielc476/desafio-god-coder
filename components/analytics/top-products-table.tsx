@@ -36,7 +36,7 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
   // CORREÇÃO (TypeError: ...toFixed):
   // Calculamos o total da receita AQUI para encontrar a porcentagem
   const totalRevenueAllProducts = products.reduce(
-    (acc, p) => acc + p.total_revenue,
+    (acc, p) => acc + p.totalRevenue,
     0
   );
 
@@ -47,14 +47,14 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
       // CORREÇÃO: Calculamos o % aqui
       const revenuePercentage =
         totalRevenueAllProducts > 0
-          ? (p.total_revenue / totalRevenueAllProducts) * 100
+          ? (p.totalRevenue / totalRevenueAllProducts) * 100
           : 0;
 
       return {
         // CORREÇÃO: Ajustando para camelCase (baseado nos logs [API Success])
-        nome: p.product_name,
-        receita: p.total_revenue,
-        pedidos: p.total_orders,
+        nome: p.name,
+        receita: p.totalRevenue,
+        pedidos: p.totalSold,
         percentualReceita: `${revenuePercentage.toFixed(1)}%`,
       };
     })
@@ -100,18 +100,18 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
               // CORREÇÃO: Calculamos o % aqui TAMBÉM para exibição
               const revenuePercentage =
                 totalRevenueAllProducts > 0
-                  ? (product.total_revenue / totalRevenueAllProducts) * 100
+                  ? (product.totalRevenue / totalRevenueAllProducts) * 100
                   : 0;
 
               return (
                 // CORREÇÃO: Ajustando para camelCase (baseado nos logs [API Success])
-                <TableRow key={product.product_id}>
-                  <TableCell className="font-medium">{product.product_name}</TableCell>
+                <TableRow key={product.productId}>
+                  <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell className="text-right">
-                    {formatCurrency(product.total_revenue)}
+                    {formatCurrency(product.totalRevenue)}
                   </TableCell>
                   <TableCell className="text-right">
-                    {product.total_orders}
+                    {product.totalSold}
                   </TableCell>
                   <TableCell className="text-right">
                     <Badge variant="secondary">

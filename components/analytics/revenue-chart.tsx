@@ -26,7 +26,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
     // Formata a data para exibição no eixo X
     date: formatDate(item.date),
     // O recharts espera um número para o eixo Y
-    totalRevenue: Number(item.total_revenue) 
+    totalRevenue: Number(item.totalRevenue) 
   }));
 
   return (

@@ -48,7 +48,7 @@ async function fetchFromApi<T>(
 
     const data: T = await response.json();
     // NOVO LOG: Mostra os dados retornados no console do SERVIDOR
-    console.log(`[API Success] ${path}:`, data);
+    console.log(`[API Response] ${url}`, data)
     
     return data;
   } catch (error) {
@@ -80,9 +80,7 @@ function parseDateRange(searchParams: {
     return { from, to };
   }
 
-  // 3. DEFAULT (Se não houver filtro na URL)
-  // CORREÇÃO: Usar 30 de Outubro de 2025 como data final padrão
-  // (baseado no DADOS.md)
+ 
   const toDate = new Date('2025-10-31T00:00:00Z'); // 31 (para incluir 30)
   const fromDate = new Date('2025-10-02T00:00:00Z'); // 02 (para incluir 01)
 
@@ -106,6 +104,7 @@ async function getRevenueOverTime(
   dates: { from: string; to: string },
   groupBy: 'day' | 'hour'
 ) {
+  console.log("revenue over time foi chamado")
   const params = new URLSearchParams({
     startDate: dates.from, // Envia 'startDate'
     endDate: dates.to, // Envia 'endDate'
@@ -121,6 +120,7 @@ async function getRevenueOverTime(
  * CU 2: Top Produtos
  */
 async function getTopProducts(dates: { from: string; to: string }, limit = 100) {
+  console.log("top products foi chamado")
   const params = new URLSearchParams({
     startDate: dates.from, // Envia 'startDate'
     endDate: dates.to, // Envia 'endDate'
@@ -133,6 +133,7 @@ async function getTopProducts(dates: { from: string; to: string }, limit = 100) 
  * CU 3: Vendas por Canal
  */
 async function getSalesByChannel(dates: { from: string; to: string }) {
+  console.log("channel foi chamado")
   const params = new URLSearchParams({
     startDate: dates.from, // Envia 'startDate'
     endDate: dates.to, // Envia 'endDate'
@@ -145,6 +146,7 @@ async function getSalesByChannel(dates: { from: string; to: string }) {
  * ROTA CORRIGIDA: /overall-average-ticket
  */
 async function getAverageTicket(dates: { from: string; to: string }) {
+  console.log("average ticket foi chamado")
   const params = new URLSearchParams({
     startDate: dates.from, // Envia 'startDate'
     endDate: dates.to, // Envia 'endDate'
@@ -160,6 +162,7 @@ async function getAverageTicket(dates: { from: string; to: string }) {
  * CU 5: Mapa de Calor (Vendas por Hora/Canal)
  */
 async function getSalesHeatmap(dates: { from: string; to: string }) {
+  console.log("heatmap foi chamado")
   const params = new URLSearchParams({
     startDate: dates.from, // Envia 'startDate'
     endDate: dates.to, // Envia 'endDate'
@@ -171,6 +174,7 @@ async function getSalesHeatmap(dates: { from: string; to: string }) {
  * CU 6: Vendas por Tipo de Pagamento
  */
 async function getSalesByPaymentType(dates: { from: string; to: string }) {
+  console.log("payment type foi chamado")
   const params = new URLSearchParams({
     startDate: dates.from, // Envia 'startDate'
     endDate: dates.to, // Envia 'endDate'
@@ -185,6 +189,7 @@ async function getSalesByPaymentType(dates: { from: string; to: string }) {
  * CU 7: Análise RFM de Clientes
  */
 async function getRfmCustomers(dates: { from: string; to: string }) {
+  console.log("rfm customers foi chamado")
   const params = new URLSearchParams({
     startDate: dates.from, // Envia 'startDate'
     endDate: dates.to, // Envia 'endDate'
