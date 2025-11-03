@@ -4,7 +4,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -12,12 +12,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { SalesHeatmapPoint } from '@/lib/types';
-import { ExplainDataButton } from './explain-data-button';
+} from '@/components/ui/table'
+import { SalesHeatmapPoint } from '@/lib/types' // <-- Importa o novo tipo
+import { ExplainDataButton } from './explain-data-button'
 
 interface SalesHeatmapTableProps {
-  data: SalesHeatmapPoint[];
+  data: SalesHeatmapPoint[]
 }
 
 // Helper para formatar moeda
@@ -27,26 +27,29 @@ const formatCurrency = (value: number) => {
     currency: 'BRL',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value);
-};
+  }).format(value)
+}
 
 export function SalesHeatmapTable({ data }: SalesHeatmapTableProps) {
-  // Prepara os dados para a IA
-  const dataContext = `Este é um mapa de calor que mostra o total de receita por hora do dia, agrupado por canal de venda.`;
+  
+  // *** CORREÇÃO DO CONTEXTO DA IA ***
+  // O contexto agora descreve os dados reais.
+  const dataContext = `Este é um mapa de calor que mostra o total de RECEITA por hora do dia, agrupado por CANAL de venda.`
   const dataJson = JSON.stringify(
     data.map((item) => ({
       hora: `${item.hour}:00`,
-      canal: item.channel_name,
-      receita: item.total_revenue,
-      pedidos: item.total_sales,
+      canal: item.channelName, // <-- Corrigido
+      receita: item.totalRevenue, // <-- Corrigido
+      pedidos: item.totalSales,
     }))
-  );
+  )
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
-          <CardTitle>Mapa de Calor</CardTitle>
+          {/* *** TÍTULO CORRIGIDO *** */}
+          <CardTitle>Horários de Pico (Receita)</CardTitle>
           <CardDescription>
             Receita por hora e canal de venda.
           </CardDescription>
@@ -60,6 +63,7 @@ export function SalesHeatmapTable({ data }: SalesHeatmapTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              {/* *** COLUNAS CORRIGIDAS *** */}
               <TableHead>Hora</TableHead>
               <TableHead>Canal</TableHead>
               <TableHead className="text-right">Receita</TableHead>
@@ -76,12 +80,13 @@ export function SalesHeatmapTable({ data }: SalesHeatmapTableProps) {
                 </TableCell>
               </TableRow>
             )}
+            {/* *** LINHAS CORRIGIDAS *** */}
             {data.map((item, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{item.hour}:00</TableCell>
-                <TableCell>{item.channel_name}</TableCell>
+                <TableCell>{item.channelName}</TableCell>
                 <TableCell className="text-right">
-                  {formatCurrency(item.total_revenue)}
+                  {formatCurrency(item.totalRevenue)}
                 </TableCell>
               </TableRow>
             ))}
@@ -89,6 +94,5 @@ export function SalesHeatmapTable({ data }: SalesHeatmapTableProps) {
         </Table>
       </CardContent>
     </Card>
-  );
+  )
 }
-

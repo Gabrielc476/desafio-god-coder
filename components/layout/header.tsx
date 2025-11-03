@@ -24,17 +24,17 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { DateRangePicker } from './date-range-picker'; // <-- 1. Importar
+import { DateRangeInputs } from './date-range-inputs'
 
 export function Header() {
   const pathname = usePathname();
 
   const navLinks = [
     { href: '/', label: 'Dashboard' },
-    { href: '/products', label: 'Produtos' },
-    { href: '/customers', label: 'Clientes' },
-    { href: '/channels', label: 'Canais' },
-    { href: '/reports', label: 'Relatórios' },
+    { href: '/produtos', label: 'Produtos' },
+    { href: '/clientes', label: 'Clientes' },
+    { href: '/canais', label: 'Canais' },
+    { href: '/relatorios', label: 'Relatórios' },
   ];
 
   return (
@@ -109,7 +109,7 @@ export function Header() {
         </form>
         
         {/* 2. Adicionar o seletor de período aqui */}
-        <DateRangePicker />
+        <DateRangeInputs />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

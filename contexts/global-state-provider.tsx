@@ -1,50 +1,93 @@
-'use client';
+'use client'
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react'
+import { format } from 'date-fns'
 
-// Aqui definimos o estado que será puramente do lado do cliente.
-// O histórico do chat é um bom candidato.
-import { ChatMessage } from '@/lib/types';
+// --- Definição dos Padrões ---
+const DEFAULT_FROM = new Date('2025-10-02T00:00:00Z')
+const DEFAULT_TO = new Date('2025-10-31T00:00:00Z')
 
-interface GlobalState {
-  isSidebarOpen: boolean;
-  toggleSidebar: () => void;
-  chatHistory: ChatMessage[];
-  setChatHistory: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+// Tipos para o formato de data
+type DateRangeString = {
+  from: string
+  to: string
+}
+type DateRangeDate = {
+  from: Date
+  to: Date
 }
 
-// O React 19 permite um valor padrão 'undefined' se checarmos
-const GlobalStateContext = createContext<GlobalState | undefined>(undefined);
+// Define os tipos para o estado global
+interface GlobalState {
+  isSidebarOpen: boolean
+  toggleSidebar: () => void
+  
+  // --- ESTADO DE DATA (Refatorado) ---
+  dateRange: DateRangeString // Formato YYYY-MM-DD (para as Server Actions)
+  dateRangeAsDate: DateRangeDate // Formato Date (para os novos inputs)
+  
+  // Funções de atualização mais simples
+  setFromDate: (newFrom: Date) => void
+  setToDate: (newTo: Date) => void
+  // setDateRange foi removido
+}
 
+// Cria o contexto
+const GlobalStateContext = createContext<GlobalState | undefined>(undefined)
+
+// Cria o provedor do contexto
 export function GlobalStateProvider({ children }: { children: ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  
+  // O estado de data continua sendo um objeto único
+  const [date, setDate] = useState<DateRangeDate>({
+    from: DEFAULT_FROM,
+    to: DEFAULT_TO,
+  })
 
   const toggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev);
-  };
+    setIsSidebarOpen(!isSidebarOpen)
+  }
+
+  // --- FUNÇÕES DE ATUALIZAÇÃO (Refatoradas) ---
+  // Atualiza apenas a data 'from'
+  const handleSetFromDate = (newFrom: Date) => {
+    setDate(current => ({ ...current, from: newFrom }))
+  }
+  
+  // Atualiza apenas a data 'to'
+  const handleSetToDate = (newTo: Date) => {
+    setDate(current => ({ ...current, to: newTo }))
+  }
+
+  const value = {
+    isSidebarOpen,
+    toggleSidebar,
+
+    // O estado fornecido permanece o mesmo
+    dateRange: {
+      from: format(date.from, 'yyyy-MM-dd'),
+      to: format(date.to, 'yyyy-MM-dd'),
+    },
+    dateRangeAsDate: date,
+    
+    // Fornecemos as novas funções
+    setFromDate: handleSetFromDate,
+    setToDate: handleSetToDate,
+  }
 
   return (
-    <GlobalStateContext.Provider
-      value={{
-        isSidebarOpen,
-        toggleSidebar,
-        chatHistory,
-        setChatHistory,
-      }}
-    >
+    <GlobalStateContext.Provider value={value}>
       {children}
     </GlobalStateContext.Provider>
-  );
+  )
 }
 
-// Hook customizado para facilitar o acesso ao contexto
+// Hook customizado para usar o contexto
 export function useGlobalState() {
-  // O hook 'use' do React 19 simplifica o consumo de contexto
-  const context = useContext(GlobalStateContext);
+  const context = useContext(GlobalStateContext)
   if (context === undefined) {
-    throw new Error('useGlobalState deve ser usado dentro de um GlobalStateProvider');
+    throw new Error('useGlobalState deve ser usado dentro de um GlobalStateProvider')
   }
-  return context;
+  return context
 }
-

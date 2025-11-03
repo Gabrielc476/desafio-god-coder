@@ -24,12 +24,12 @@ import { cn } from '@/lib/utils';
 // Itens de navegação
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
-  { href: '/products', label: 'Produtos', icon: Package },
-  { href: '/customers', label: 'Clientes', icon: Users },
-  { href: '/channels', label: 'Canais', icon: Building },
-  { href: '/payments', label: 'Pagamentos', icon: CreditCard },
+  { href: '/produtos', label: 'Produtos', icon: Package },
+  { href: '/clientes', label: 'Clientes', icon: Users },
+  { href: '/canais', label: 'Canais', icon: Building },
+  { href: '/pagamentos', label: 'Pagamentos', icon: CreditCard },
   { href: '/heatmap', label: 'Mapa de Calor', icon: Grid },
-  { href: '/reports', label: 'Relatórios', icon: FileText },
+  { href: '/relatorios', label: 'Relatórios', icon: FileText },
 ];
 
 export function Sidebar() {
@@ -86,4 +86,3 @@ export function Sidebar() {
     </aside>
   );
 }
-

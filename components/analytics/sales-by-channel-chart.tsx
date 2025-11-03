@@ -1,103 +1,78 @@
-'use client'; // Este componente usa Recharts e 'use client'
+'use client'
 
 import {
-  Bar,
-  BarChart,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
   Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { SalesByChannel } from '@/lib/types';
-import { ExplainDataButton } from './explain-data-button';
+} from 'recharts'
+import { SalesByChannel } from '@/lib/types'
+// Imports do Card REMOVIDOS (corrigindo os erros do ESLint)
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-interface SalesByChannelChartProps {
-  data: SalesByChannel[];
-}
+// Cores para o gráfico
+const COLORS = [
+  '#0088FE',
+  '#00C49F',
+  '#FFBB28',
+  '#FF8042',
+  '#8884D8',
+  '#E36414',
+]
 
 // Helper para formatar moeda
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
-
-export function SalesByChannelChart({ data }: SalesByChannelChartProps) {
-  // Prepara os dados para a IA
-  const dataContext = `Esta é a minha receita total por canal de venda no período selecionado.`;
-  const dataJson = JSON.stringify(
-    data.map((item) => ({
-      canal: item.channel_name,
-      receita: item.total_revenue,
-      pedidos: item.total_sales,
-    }))
-  );
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div>
-          <CardTitle>Receita por Canal</CardTitle>
-          <CardDescription>
-            Receita total gerada por cada canal de venda.
-          </CardDescription>
-        </div>
-        <ExplainDataButton
-          dataContext={dataContext}
-          dataJson={dataJson}
-        />
-      </CardHeader>
-      <CardContent>
-        {data.length === 0 ? (
-          <div className="flex h-[300px] items-center justify-center">
-            <p className="text-muted-foreground">
-              Nenhum dado de canal encontrado no período.
-            </p>
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={data}>
-              <XAxis
-                dataKey="channel_name"
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `R$${value / 1000}k`}
-              />
-              <Tooltip
-                formatter={(value: number) => [
-                  formatCurrency(value),
-                  'Receita',
-                ]}
-                cursor={{ fill: 'hsl(var(--muted))' }}
-              />
-              <Bar
-                dataKey="total_revenue"
-                fill="hsl(var(--primary))"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </CardContent>
-    </Card>
-  );
+  }).format(value)
 }
 
+interface SalesByChannelChartProps {
+  data: SalesByChannel[]
+}
+
+export function SalesByChannelChart({ data }: SalesByChannelChartProps) {
+  // Formata os dados para o Tooltip
+  const chartData = data.map((item) => ({
+    ...item,
+    formattedRevenue: formatCurrency(item.totalRevenue),
+  }))
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={chartData}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          outerRadius={80}
+          fill="#8884d8"
+          dataKey="totalRevenue" // O valor (correto)
+          nameKey="channelName"  // *** CORREÇÃO (já feita) ***
+          
+          // *** CORREÇÃO DO ERRO 'percent is unknown' ***
+          // Adicionamos a tipagem explícita ao argumento
+          label={({ percent }: { percent: number }) => 
+            `${(percent * 100).toFixed(0)}%`
+          }
+        >
+          {chartData.map((_, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip
+          formatter={(value, name, props) => {
+            return [
+              props.payload.formattedRevenue, // Valor formatado
+              props.payload.channelName,    // Nome (corrigido)
+            ]
+          }}
+          labelFormatter={() => ''} // Oculta o label principal
+        />
+      </PieChart>
+    </ResponsiveContainer>
+  )
+}

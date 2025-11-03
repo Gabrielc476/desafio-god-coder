@@ -1,13 +1,15 @@
-'use client';
+'use client'
 
+// Removido 'useEffect' e 'useState', não são mais necessários
+import React from 'react'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { SalesByPaymentType } from '@/lib/types';
+} from '@/components/ui/card'
+import { SalesByPaymentType } from '@/lib/types'
 import {
   ResponsiveContainer,
   PieChart,
@@ -16,59 +18,58 @@ import {
   Tooltip,
   Legend,
   PieLabelRenderProps,
-} from 'recharts';
-import { ExplainDataButton } from './explain-data-button';
-import { Badge } from '@/components/ui/badge';
+} from 'recharts'
+import { ExplainDataButton } from './explain-data-button'
+import { Badge } from '@/components/ui/badge'
 
-// Cores para o gráfico de pizza (baseado no shadcn)
+// *** A CORREÇÃO ***
+// Trocamos as cores CSS (que eram pretas) por um
+// array de cores vibrantes e estáticas.
 const COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--secondary))',
-  'hsl(var(--muted))',
-  'hsl(var(--accent))',
-  'hsl(var(--info))',
-  'hsl(var(--success))',
-];
+  '#0088FE', // Azul
+  '#00C49F', // Verde
+  '#FFBB28', // Amarelo
+  '#FF8042', // Laranja
+  '#8884D8', // Roxo
+  '#E36414', // Vermelho
+]
 
-// Helper para formatar moeda
+// (As funções getCssVariableValue e BASE_COLORS_HSL foram removidas)
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(value);
-};
+  }).format(value)
+}
 
-// CORREÇÃO 1: Adicionar um type-guard para 'percent'
+// Type-guard para 'percent'
 const renderCustomizedLabel = (props: PieLabelRenderProps) => {
-  const { percent } = props;
-
-  // Checa se 'percent' é um número válido (não null/undefined)
-  // antes de usá-lo em operações matemáticas.
+  const { percent } = props
   if (typeof percent !== 'number' || percent === 0) {
-    return '0%';
+    return ''
   }
-
-  // Agora o TypeScript sabe que 'percent' é um 'number'
-  return `${(percent * 100).toFixed(0)}%`;
-};
+  return `${(percent * 100).toFixed(0)}%`
+}
 
 interface SalesByPaymentChartProps {
-  data: SalesByPaymentType[];
+  data: SalesByPaymentType[]
 }
 
 export function SalesByPaymentChart({ data }: SalesByPaymentChartProps) {
-  // Prepara os dados para a IA
-  const dataContext = `Esta é a distribuição da minha receita total por tipo de pagamento no período selecionado.`;
+  // (O estado 'resolvedColors' e o 'useEffect' foram removidos)
+
+  // Prepara os dados para a IA (Corrigido para camelCase)
+  const dataContext = `Esta é a distribuição da minha receita total por tipo de pagamento.`
   const dataJson = JSON.stringify(
     data.map((item) => ({
-      tipo: item.payment_type_name,
-      receita: item.total_revenue,
-      transacoes: item.total_transactions,
+      tipo: item.paymentTypeName,
+      receita: item.totalRevenue,
+      transacoes: item.totalTransactions,
     }))
-  );
+  )
 
-  // CORREÇÃO 2: Variável 'totalRevenue' removida pois não estava sendo usada.
-  // O 'renderCustomizedLabel' usa o 'percent' fornecido pela recharts.
+  // (O 'if (resolvedColors.length === 0)' foi removido)
 
   return (
     <Card>
@@ -76,8 +77,7 @@ export function SalesByPaymentChart({ data }: SalesByPaymentChartProps) {
         <div>
           <CardTitle>Receita por Pagamento</CardTitle>
           <CardDescription>
-            Como sua receita está distribuída entre os tipos de pagamento.
-            {/* CORREÇÃO: Removido o 'd' extra no fechamento da tag */}
+            Distribuição da receita por tipo de pagamento.
           </CardDescription>
         </div>
         <ExplainDataButton dataContext={dataContext} dataJson={dataJson} />
@@ -85,7 +85,7 @@ export function SalesByPaymentChart({ data }: SalesByPaymentChartProps) {
       <CardContent>
         {data.length === 0 ? (
           <div className="h-[300px] w-full flex items-center justify-center text-muted-foreground">
-            Nenhum dado de pagamento encontrado no período.
+            Nenhum dado de pagamento encontrado.
           </div>
         ) : (
           <div className="h-[300px] w-full">
@@ -93,27 +93,25 @@ export function SalesByPaymentChart({ data }: SalesByPaymentChartProps) {
               <PieChart>
                 <Tooltip
                   formatter={(value: number, name: string) => {
-                    if (name === 'Receita') {
-                      return [formatCurrency(value), name];
-                    }
-                    return [value, name];
+                    return [formatCurrency(value), name]
                   }}
                 />
                 <Legend />
                 <Pie
                   data={data}
-                  dataKey="total_revenue"
-                  nameKey="payment_type_name"
+                  dataKey="totalRevenue"
+                  nameKey="paymentTypeName"
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
-                  fill="#8884d8"
+                  // fill="#8884d8" // <-- Removido
                   label={renderCustomizedLabel}
                   labelLine={false}
                 >
                   {data.map((entry, index) => (
                     <Cell
-                      key={`cell-${index}`}
+                      key={`cell-${entry.paymentTypeId}`}
+                      // Usamos o array de cores estático
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
@@ -125,24 +123,24 @@ export function SalesByPaymentChart({ data }: SalesByPaymentChartProps) {
         <div className="flex flex-wrap gap-2 pt-4">
           {data.map((item, index) => (
             <div
-              key={item.payment_type_id}
+              key={item.paymentTypeId}
               className="flex items-center gap-2"
             >
               <span
                 className="h-3 w-3 rounded-full"
+                // Usamos o array de cores estático
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
               <span className="text-sm font-medium">
-                {item.payment_type_name}:
+                {item.paymentTypeName}:
               </span>
               <Badge variant="secondary">
-                {formatCurrency(item.total_revenue)}
+                {formatCurrency(item.totalRevenue)}
               </Badge>
             </div>
           ))}
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
-
