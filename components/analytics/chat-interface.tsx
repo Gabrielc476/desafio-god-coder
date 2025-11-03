@@ -1,106 +1,108 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useRef } from 'react'; // 1. Importar useEffect e useRef
-import { useActionState } from 'react'; // React 19
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-// CORREÇÃO (TS2724): Corrigido o case de 'askAIAction'
-import { askAIAction } from '@/lib/actions';
-import { AIActionState, ChatMessage } from '@/lib/types';
-import { ArrowUp, Bot, Loader2, User } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
-import ReactMarkdown from 'react-markdown'; // Lembre-se: npm install react-markdown
+import { useState, useEffect, useRef } from 'react'
+import { useActionState } from 'react'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { askAIAction } from '@/lib/actions'
+import { AIActionState, ChatMessage } from '@/lib/types'
+import { ArrowUp, Bot, Loader2, User } from 'lucide-react'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { cn } from '@/lib/utils'
+import ReactMarkdown from 'react-markdown'
 
-// O estado inicial da nossa Server Action
-// CORREÇÃO (TS2554): O tipo agora é ChatMessage, e não string
 const initialState: AIActionState<ChatMessage> = {
   data: null,
   error: null,
-};
+}
 
 interface ChatInterfaceProps {
-  dateContext: string; // Ex: "O usuário está vendo o período X a Y"
+  dateContext: string;
+}
+
+// Componente "Digitando..."
+function TypingIndicator() {
+  return (
+    <div className="flex items-center space-x-1.5">
+      <div className="h-2 w-2 animate-bounce rounded-full bg-current [animation-delay:-0.3s]" />
+      <div className="h-2 w-2 animate-bounce rounded-full bg-current [animation-delay:-0.15s]" />
+      <div className="h-2 w-2 animate-bounce rounded-full bg-current" />
+    </div>
+  )
 }
 
 export function ChatInterface({ dateContext }: ChatInterfaceProps) {
-  // 1. Histórico de mensagens da UI
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'model',
       parts: 'Olá! Sou a Nola IA. Pergunte-me sobre suas vendas, produtos ou clientes.',
     },
-  ]);
+  ])
+  const [prompt, setPrompt] = useState('')
 
-  // 2. O prompt atual que o usuário está digitando
-  const [prompt, setPrompt] = useState('');
+  // *** MUDANÇA 1: Renomear 'dispatch' para 'formAction' para clareza ***
+  const [state, formAction, isPending] = useActionState(
+    askAIAction,
+    initialState,
+  )
 
-  // 3. Hook useActionState para lidar com a chamada da Server Action
-  // A correção no 'initialState' resolve o erro de tipo no 'dispatch'
-  const [state, dispatch, isPending] = useActionState(askAIAction, initialState);
+  const lastProcessedState = useRef(initialState)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  // 4. Ref para rastrear o último 'state' que já processamos
-  // Isso evita que o useEffect adicione a mesma resposta da IA múltiplas vezes
-  const lastProcessedState = useRef(initialState);
+  // *** MUDANÇA 2: Criar um handler síncrono APENAS para a UI ***
+  const handleOptimisticSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    // Não usamos e.preventDefault()
+    // Este handler roda, e DEPOIS o 'action' do form é disparado.
 
-  // 5. Handler para enviar o formulário
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const currentPrompt = prompt.trim();
-    if (!currentPrompt || isPending) return;
+    const currentPrompt = prompt.trim()
+    if (!currentPrompt || isPending) {
+      e.preventDefault() // Previne o envio se estiver vazio ou pendente
+      return
+    }
 
-    // 5A. Atualização Otimista: Adiciona a mensagem do usuário à UI
-    const userMessage: ChatMessage = { role: 'user', parts: currentPrompt };
-    setMessages((prev) => [...prev, userMessage]);
-    setPrompt(''); // Limpa o input
+    // Atualização Otimista: Adiciona a mensagem do usuário
+    const userMessage: ChatMessage = { role: 'user', parts: currentPrompt }
+    setMessages((prev) => [...prev, userMessage])
+    setPrompt('') // Limpa o input
+  }
 
-    // 5B. Prepara o FormData para a Server Action
-    const formData = new FormData();
-    formData.append('prompt', currentPrompt);
-    formData.append('dateContext', dateContext);
-    // Envia o histórico (sem a msg de boas-vindas, mas com a msg atual)
-    // A action 'askAIAction' espera o histórico *antes* da msg atual
-    const history = [...messages.slice(1)];
-    formData.append('history', JSON.stringify(history));
-
-    // 5C. Dispara a Server Action
-    dispatch(formData);
-  };
-
-  // 6. useEffect para reagir à *resposta* da Server Action (quando 'state' muda)
+  // useEffect para reagir à *resposta* (sem alterações)
   useEffect(() => {
-    // Se o 'state' atual é o mesmo que já processamos, não faz nada.
     if (state === lastProcessedState.current) {
-      return;
+      return
     }
+    lastProcessedState.current = state
 
-    // Se o 'state' é novo, marca como processado
-    lastProcessedState.current = state;
-
-    // Não processa o estado inicial
     if (state.data === null && state.error === null) {
-      return;
+      return
     }
 
-    // CORREÇÃO (TS2345): Criamos uma const local para ajudar o TypeScript
-    const responseData = state.data;
-    const responseError = state.error;
+    const responseData = state.data
+    const responseError = state.error
 
-    // 6A. Adiciona a resposta da IA (data)
     if (responseData) {
-      setMessages((prev) => [...prev, responseData]);
-    }
-    // 6B. Adiciona a mensagem de erro
-    else if (responseError) {
+      setMessages((prev) => [...prev, responseData])
+    } else if (responseError) {
       const errorMessage: ChatMessage = {
         role: 'model',
         parts: `Desculpe, ocorreu um erro: ${responseError}. Tente perguntar de outra forma.`,
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      }
+      setMessages((prev) => [...prev, errorMessage])
     }
-    // O 'state' é limpo automaticamente pelo React na próxima 'dispatch'
-  }, [state]); // Apenas 'state' como dependência
+  }, [state])
+
+  // useEffect para auto-scroll (sem alterações)
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollViewport = scrollAreaRef.current.querySelector(
+        '[data-radix-scroll-area-viewport]',
+      )
+      if (scrollViewport) {
+        scrollViewport.scrollTop = scrollViewport.scrollHeight
+      }
+    }
+  }, [messages, isPending])
 
   return (
     <Card className="flex h-[75vh] flex-col">
@@ -110,39 +112,32 @@ export function ChatInterface({ dateContext }: ChatInterfaceProps) {
         </p>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full pr-4">
+        <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.map((msg, index) => (
               <div
                 key={index}
                 className={cn(
                   'flex items-start gap-3',
-                  msg.role === 'user' && 'justify-end'
+                  msg.role === 'user' && 'justify-end',
                 )}
               >
-                {/* Ícone */}
                 {msg.role === 'model' && (
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <Bot className="h-5 w-5" />
                   </span>
                 )}
-
-                {/* Balão da Mensagem */}
-                {/* CORREÇÃO (TS2322): Classes 'prose' movidas para o 'div' pai */}
                 <div
                   className={cn(
                     'max-w-[75%] rounded-lg p-3 text-sm',
-                    'prose prose-sm prose-invert max-w-none', // As classes prose estilizam o conteúdo
+                    'prose prose-sm prose-invert max-w-none',
                     msg.role === 'user'
-                      ? 'bg-muted prose-neutral' // Ajusta as cores do prose para o modo claro
-                      : 'bg-primary text-primary-foreground'
+                      ? 'bg-muted prose-neutral'
+                      : 'bg-primary text-primary-foreground',
                   )}
                 >
-                  {/* O ReactMarkdown agora não precisa de classes */}
                   <ReactMarkdown>{msg.parts}</ReactMarkdown>
                 </div>
-
-                {/* Ícone do Usuário */}
                 {msg.role === 'user' && (
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                     <User className="h-5 w-5" />
@@ -150,14 +145,14 @@ export function ChatInterface({ dateContext }: ChatInterfaceProps) {
                 )}
               </div>
             ))}
-            {/* 7. O 'isPending' do hook controla o loader */}
+            {/* O 'isPending' agora funcionará corretamente */}
             {isPending && (
               <div className="flex items-start gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                   <Bot className="h-5 w-5" />
                 </span>
-                <div className="rounded-lg bg-primary p-3 text-primary-foreground">
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                <div className="rounded-lg bg-primary px-4 py-3 text-primary-foreground">
+                  <TypingIndicator />
                 </div>
               </div>
             )}
@@ -165,14 +160,27 @@ export function ChatInterface({ dateContext }: ChatInterfaceProps) {
         </ScrollArea>
       </CardContent>
       <CardFooter>
-        {/* 8. O form agora chama o handleSubmit */}
-        <form onSubmit={handleSubmit} className="flex w-full gap-2">
+        {/* *** MUDANÇA 3: Usar 'action' e 'onSubmit' juntos *** */}
+        <form
+          action={formAction} // O 'action' real (corrige o erro)
+          onSubmit={handleOptimisticSubmit} // O handler otimista (síncrono)
+          className="flex w-full gap-2"
+        >
           <Input
+            name="prompt" // <-- 'name' é obrigatório para o FormData
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Qual foi o meu ticket médio no iFood ontem?"
             disabled={isPending}
           />
+          {/* *** MUDANÇA 4: Passar 'history' e 'dateContext' via hidden inputs *** */}
+          <input
+            type="hidden"
+            name="history"
+            value={JSON.stringify(messages.slice(1))}
+          />
+          <input type="hidden" name="dateContext" value={dateContext} />
+
           <Button type="submit" disabled={isPending || !prompt.trim()}>
             {isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -183,6 +191,5 @@ export function ChatInterface({ dateContext }: ChatInterfaceProps) {
         </form>
       </CardFooter>
     </Card>
-  );
+  )
 }
-

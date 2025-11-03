@@ -1,12 +1,8 @@
-'use client';
+'use client'
 
-import {
-  Menu,
-  Package2,
-  Search,
-} from 'lucide-react';
+import { Menu, Package2 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,20 +10,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+} from '@/components/ui/dropdown-menu'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
 import { DateRangeInputs } from './date-range-inputs'
 
 export function Header() {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   const navLinks = [
     { href: '/', label: 'Dashboard' },
@@ -38,7 +29,7 @@ export function Header() {
     { href: '/heatmap', label: 'Mapa de Calor' },
     { href: '/chat', label: 'Chat' },
     { href: '/relatorios', label: 'Relatórios' },
-  ];
+  ]
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
@@ -55,10 +46,11 @@ export function Header() {
             key={link.href}
             href={link.href}
             className={cn(
-              'transition-colors hover:text-foreground',
+              // *** CORREÇÃO 1: Adicionado 'whitespace-nowrap' ***
+              'whitespace-nowrap transition-colors hover:text-foreground',
               pathname === link.href
                 ? 'text-foreground'
-                : 'text-muted-foreground'
+                : 'text-muted-foreground',
             )}
           >
             {link.label}
@@ -86,10 +78,11 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'transition-colors hover:text-foreground',
+                  // *** CORREÇÃO 1 (Mobile): Adicionado 'whitespace-nowrap' ***
+                  'whitespace-nowrap transition-colors hover:text-foreground',
                   pathname === link.href
                     ? 'text-foreground'
-                    : 'text-muted-foreground'
+                    : 'text-muted-foreground',
                 )}
               >
                 {link.label}
@@ -98,27 +91,17 @@ export function Header() {
           </nav>
         </SheetContent>
       </Sheet>
-      <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        {/* Formulário de busca (pode ser usado futuramente) */}
-        <form className="ml-auto flex-1 sm:flex-initial">
-          <div className="relative">
-            {/* <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Buscar..."
-              className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-            /> */}
-          </div>
-        </form>
+      
+      {/* *** CORREÇÃO 2: Removido 'w-full' do div abaixo *** */}
+      <div className="flex items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+        {/* O <form> de busca foi removido */}
         
-        {/* 2. Adicionar o seletor de período aqui */}
         <DateRangeInputs />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
-              {/* <CircleUser className="h-5 w-5" /> */}
-              <span className="font-semibold">M</span> 
+              <span className="font-semibold">M</span>
               <span className="sr-only">Toggle user menu</span>
             </Button>
           </DropdownMenuTrigger>
@@ -133,6 +116,5 @@ export function Header() {
         </DropdownMenu>
       </div>
     </header>
-  );
+  )
 }
-

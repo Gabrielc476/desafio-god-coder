@@ -64,6 +64,7 @@ export type ChatMessage = {
 export type AIChatRequest = {
   prompt: string
   history: ChatMessage[]
+  dateContext: string // <-- ADICIONE ESTA LINHA
 }
 
 export type AIExplainRequest = {

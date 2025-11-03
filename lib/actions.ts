@@ -76,7 +76,7 @@ export async function getDashboardDataAction(
       totalSales: 0,
       total_revenue: 0,
     })),
-    api.getTopProducts(dateRange, 10).catch(() => []), // Limite de 10 para o Dashboard
+    api.getTopProducts(dateRange, 10).catch(() => []),
     api.getRevenueOverTime(dateRange, 'day').catch(() => []),
   ])
   const totalRevenue = (revenueOverTime || []).reduce(
@@ -97,11 +97,9 @@ export async function getDashboardDataAction(
 export async function getTopProductsAction(
   dateRange: DateRangeParams,
 ): Promise<TopProduct[]> {
-  console.log(
-    `[Server Action] Buscando TOP PRODUTOS para ${dateRange.from} a ${dateRange.to}`,
-  )
-  // Usamos um limite alto (100) para o relatório dedicado de produtos
-  return api.getTopProducts(dateRange, 100).catch(() => [])
+  
+  // Usamos um limite alto (10) para o relatório dedicado de produtos
+  return api.getTopProducts(dateRange, 10).catch(() => [])
 }
 
 /**
@@ -110,9 +108,7 @@ export async function getTopProductsAction(
 export async function getCanaisDataAction(
   dateRange: DateRangeParams,
 ): Promise<CanaisData> {
-  console.log(
-    `[Server Action] Buscando dados de CANAIS para ${dateRange.from} a ${dateRange.to}`,
-  )
+  
   const salesByChannel = await api.getSalesByChannel(dateRange).catch(() => [])
   return {
     salesByChannel,
@@ -125,9 +121,7 @@ export async function getCanaisDataAction(
 export async function getPagamentosDataAction(
   dateRange: DateRangeParams,
 ): Promise<PagamentosData> {
-  console.log(
-    `[Server Action] Buscando dados de PAGAMENTOS para ${dateRange.from} a ${dateRange.to}`,
-  )
+  
   const salesByPaymentType = await api.getSalesByPaymentType(dateRange).catch(() => [])
   return {
     salesByPaymentType,
@@ -140,9 +134,7 @@ export async function getPagamentosDataAction(
 export async function getHeatmapDataAction(
   dateRange: DateRangeParams,
 ): Promise<HeatmapData> {
-  console.log(
-    `[Server Action] Buscando dados de HEATMAP para ${dateRange.from} a ${dateRange.to}`,
-  )
+  
   const salesHeatmap = await api.getSalesHeatmap(dateRange).catch(() => [])
   return {
     salesHeatmap,
@@ -156,9 +148,7 @@ export async function getDynamicReportAction({
   dimension,
   dateRange,
 }: DynamicReportParams): Promise<any[]> {
-  console.log(
-    `[Server Action] Gerando relatório dinâmico por [${dimension}]`,
-  )
+ 
 
   // O 'switch' roteia para a função de API correta
   switch (dimension) {
@@ -190,9 +180,15 @@ export async function askAIAction(
 ): Promise<AIActionState<ChatMessage>> {
   const prompt = formData.get('prompt') as string
   const historyString = formData.get('history') as string
+  
+  const dateContext = formData.get('dateContext') as string
 
   if (!prompt) {
     return { data: null, error: 'Prompt é obrigatório.' }
+  }
+  
+  if (!dateContext) {
+    return { data: null, error: 'Contexto de data é obrigatório.' }
   }
 
   let history: ChatMessage[] = []
@@ -203,9 +199,11 @@ export async function askAIAction(
     return { data: null, error: 'Histórico de chat inválido.' }
   }
 
+ 
   const requestBody: AIChatRequest = {
     prompt,
     history,
+    dateContext, 
   }
 
   try {
@@ -213,12 +211,12 @@ export async function askAIAction(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
-      cache: 'no-store', // Mutações nunca devem ser cacheadas
+      cache: 'no-store',
     })
 
     if (!res.ok) {
       const errorBody = await res.json()
-      console.error('Erro da API Backend (/ai/ask):', errorBody)
+      
       return { data: null, error: errorBody.error || 'Erro ao contatar a IA.' }
     }
 
@@ -229,7 +227,7 @@ export async function askAIAction(
       error: null,
     }
   } catch (error) {
-    console.error('Erro de rede na askAIAction:', error)
+    
     return { data: null, error: 'Erro de rede ao conectar com o assistente.' }
   }
 }
@@ -241,35 +239,18 @@ export async function explainDataAction(
   previousState: AIActionState<string>,
   formData: FormData,
 ): Promise<AIActionState<string>> {
-  console.log('--- [explainDataAction] INICIADA ---')
-
+ 
   const dataContext = formData.get('dataContext') as string
   const dataJson = formData.get('dataJson') as string
-
-  console.log(
-    `[explainDataAction] Contexto: ${
-      dataContext ? dataContext.substring(0, 70) + '...' : 'NULO'
-    }`,
-  )
-  console.log(
-    `[explainDataAction] JSON: ${
-      dataJson ? dataJson.substring(0, 70) + '...' : 'NULO'
-    }`,
-  )
-
   if (!dataContext || !dataJson) {
     console.error('[explainDataAction] ERRO: Contexto ou JSON ausentes.')
     return { data: null, error: 'Contexto e dados são obrigatórios.' }
   }
-
   const requestBody: AIExplainRequest = {
     dataContext,
     dataJson,
   }
-
   const url = `${API_URL}/ai/explain`
-  console.log(`[explainDataAction] Enviando request para: ${url}`)
-
   try {
     const res = await fetch(url, {
       method: 'POST',
@@ -277,10 +258,6 @@ export async function explainDataAction(
       body: JSON.stringify(requestBody),
       cache: 'no-store',
     })
-
-    console.log(
-      `[explainDataAction] Resposta da API recebida. Status: ${res.status}`,
-    )
 
     if (!res.ok) {
       const errorBody = await res
@@ -292,24 +269,14 @@ export async function explainDataAction(
       )
       return {
         data: null,
-        error: errorBody.error || `Erro ${res.status} ao gerar explicação.`,
+        error: errorBody.error || `Erro ao gerar explicação., por favor tente de novo em alguns segundos`,
       }
     }
-
-    // A 'data' agora será do tipo { explanation: string }
     const data: AIExplainResponse = await res.json()
-
-    // --- *** A CORREÇÃO ESTÁ AQUI *** ---
-    // Trocamos 'data.response' por 'data.explanation' para alinhar com o backend.
-    // Também atualizei o log para usar a chave correta.
-    console.log(
-      '[explainDataAction] SUCESSO: Dados da IA recebidos:',
-      data.explanation ? data.explanation.substring(0, 100) + '...' : 'VAZIO',
-    )
     return { data: data.explanation, error: null }
   } catch (error) {
     console.error('[explainDataAction] ERRO de Rede/Fetch:', error)
-    // @ts-ignore
+    // @ts-expect-error: error pode ser de tipo desconhecido
     const errorMessage = error.message || 'Erro de rede desconhecido.'
     return {
       data: null,

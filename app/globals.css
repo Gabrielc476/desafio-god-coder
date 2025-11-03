@@ -112,6 +112,26 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+.recharts-tooltip-wrapper {
+  
+  z-index: 9999 !important;
+}
+
+/* 2. CORREÇÃO DAS CORES DAS BARRAS (SELETORES HIPER-ESPECÍFICOS)
+ * Esta é a única maneira de vencer uma regra global agressiva.
+ * Nós miramos no <path> com a classe que damos a ele, DENTRO
+ * do grupo <g> que o Recharts cria.
+*/
+g.recharts-bar-rectangle path.revenue-bar-high {
+  fill: #22c55e !important; /* Verde (Tailwind green-500) */
+}
+g.recharts-bar-rectangle path.revenue-bar-medium {
+  fill: #f97316 !important; /* Laranja (Tailwind orange-500) */
+}
+g.recharts-bar-rectangle path.revenue-bar-low {
+  fill: #ef4444 !important; /* Vermelho (Tailwind red-500) */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

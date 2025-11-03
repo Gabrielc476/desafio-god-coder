@@ -62,9 +62,6 @@ function parseDateRange(dateParams: {
   const toDate = new Date('2025-10-31T00:00:00Z')
   const fromDate = new Date('2025-10-02T00:00:00Z')
 
-  console.log(
-    `[API Date] Usando datas DEFAULT: ${fromDate.toISOString().split('T')[0]} a ${toDate.toISOString().split('T')[0]}`
-  )
 
   return {
     from: fromDate.toISOString().split('T')[0],
@@ -78,7 +75,7 @@ async function getRevenueOverTime(
   dates: { from: string; to: string },
   groupBy: 'day' | 'hour'
 ) {
-  console.log('revenue over time foi chamado')
+  
   const params = new URLSearchParams({
     startDate: dates.from,
     endDate: dates.to,
@@ -91,7 +88,7 @@ async function getRevenueOverTime(
 }
 
 async function getTopProducts(dates: { from: string; to: string }, limit = 100) {
-  console.log('top products foi chamado')
+  
   const params = new URLSearchParams({
     startDate: dates.from,
     endDate: dates.to,
@@ -100,35 +97,23 @@ async function getTopProducts(dates: { from: string; to: string }, limit = 100) 
   return fetchFromApi<TopProduct[]>('/analytics/top-products', params)
 }
 
+
 /**
  * CU 3: Vendas por Canal
- * *** CORRIGIDO COM BASE NO LOG ***
- */
-/**
- * CU 3: Vendas por Canal
- * *** CORRIGIDO (Sem Adaptador) ***
  */
 async function getSalesByChannel(dates: { from: string; to: string }): Promise<SalesByChannel[]> {
-  console.log('channel foi chamado')
+  
   const params = new URLSearchParams({
     startDate: dates.from,
     endDate: dates.to,
   })
-
-  // 1. Buscar dados brutos (tipados com o NOVO tipo)
   const data = await fetchFromApi<SalesByChannel[]>(
     '/analytics/sales-by-channel',
     params
   )
-
-  // 2. *** LOG SOLICITADO (Mantido) ***
-  console.log('[DEBUG Canais] Dados brutos recebidos do backend:', data)
-
-  // 3. Retornar os dados (sem adaptador)
   return Array.isArray(data) ? data : []
 }
 
-// (getAverageTicket permanece como estava, já corrigido)
 async function getAverageTicket(dates: { from: string; to: string }): Promise<AverageTicket> {
   console.log('average ticket foi chamado')
   const params = new URLSearchParams({
@@ -149,7 +134,7 @@ async function getAverageTicket(dates: { from: string; to: string }): Promise<Av
 
 /**
  * CU 5: Mapa de Calor (Vendas por Hora/Canal)
- * *** LOG ADICIONADO ***
+ 
  */
 async function getSalesHeatmap(dates: { from: string; to: string }): Promise<SalesHeatmapPoint[]> {
   console.log('heatmap foi chamado')
@@ -158,21 +143,17 @@ async function getSalesHeatmap(dates: { from: string; to: string }): Promise<Sal
     endDate: dates.to,
   })
 
-  // 1. Buscar dados brutos
+  
   const data = await fetchFromApi<SalesHeatmapPoint[]>(
     '/analytics/sales-heatmap',
     params
   )
-  
-  // 2. *** LOG SOLICITADO ***
-  console.log('[DEBUG Heatmap] Dados brutos recebidos do backend:', data)
 
   return Array.isArray(data) ? data : []
 }
 
 /**
  * CU 6: Vendas por Tipo de Pagamento
- * *** CORRIGIDO (Sem Adaptador, Log Mantido) ***
  */
 async function getSalesByPaymentType(dates: { from: string; to: string }): Promise<SalesByPaymentType[]> {
   console.log('payment type foi chamado')
@@ -181,20 +162,16 @@ async function getSalesByPaymentType(dates: { from: string; to: string }): Promi
     endDate: dates.to,
   })
 
-  // 1. Buscar dados brutos (tipados com o tipo correto)
+  
   const data = await fetchFromApi<SalesByPaymentType[]>(
     '/analytics/sales-by-payment-type',
     params
   )
 
-  // 2. *** LOG SOLICITADO (Mantido) ***
-  console.log('[DEBUG Pagamentos] Dados brutos recebidos do backend:', data)
-
   return Array.isArray(data) ? data : []
 }
 /**
  * CU 7: Análise RFM de Clientes
- * *** LOG REMOVIDO (Já corrigido) ***
  */
 async function getRfmCustomers(dates: { from: string; to: string }): Promise<RfmCustomer[]> {
   console.log('rfm customers foi chamado')
@@ -211,14 +188,14 @@ async function getRfmCustomers(dates: { from: string; to: string }): Promise<Rfm
   return Array.isArray(data) ? data : []
 }
 
-// Exporta o objeto 'api'
+
 export const api = {
   parseDateRange,
   getRevenueOverTime,
   getTopProducts,
-  getSalesByChannel, // <-- Agora retorna a função corrigida
+  getSalesByChannel, 
   getAverageTicket,
   getSalesHeatmap,
-  getSalesByPaymentType, // <-- Agora retorna a função corrigida
+  getSalesByPaymentType, 
   getRfmCustomers,
 }
