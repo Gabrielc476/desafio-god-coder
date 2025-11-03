@@ -11,6 +11,7 @@ import {
   FileText,
   Settings,
   Grid,
+  MessageSquare,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -30,6 +31,7 @@ const navItems = [
   { href: '/pagamentos', label: 'Pagamentos', icon: CreditCard },
   { href: '/heatmap', label: 'Mapa de Calor', icon: Grid },
   { href: '/relatorios', label: 'Relatórios', icon: FileText },
+  { href: '/chat', label: 'Chat', icon: MessageSquare }
 ];
 
 export function Sidebar() {

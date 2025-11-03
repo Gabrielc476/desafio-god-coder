@@ -34,6 +34,9 @@ export function Header() {
     { href: '/produtos', label: 'Produtos' },
     { href: '/clientes', label: 'Clientes' },
     { href: '/canais', label: 'Canais' },
+    { href: '/pagamentos', label: 'Pagamentos' },
+    { href: '/heatmap', label: 'Mapa de Calor' },
+    { href: '/chat', label: 'Chat' },
     { href: '/relatorios', label: 'Relatórios' },
   ];
 
