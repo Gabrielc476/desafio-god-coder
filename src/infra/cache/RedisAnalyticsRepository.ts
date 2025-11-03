@@ -31,7 +31,7 @@ export class RedisAnalyticsRepository implements IAnalyticsRepository {
     // O cliente de cache (Redis)
     private cacheClient: Redis
   ) {
-    console.log('[Cache] Repositório de Cache (Redis) inicializado.');
+    
   }
 
   /**
@@ -47,7 +47,7 @@ export class RedisAnalyticsRepository implements IAnalyticsRepository {
       // 1. Tentar buscar do cache
       const cachedResult = await this.cacheClient.get(cacheKey);
       if (cachedResult) {
-        console.log(`[Cache] HIT para a chave: ${cacheKey}`);
+        
         // Se encontrar, desserializa (JSON) e retorna
         return JSON.parse(cachedResult) as T;
       }
@@ -57,7 +57,7 @@ export class RedisAnalyticsRepository implements IAnalyticsRepository {
     }
 
     // 2. Se for 'MISS' (não encontrado no cache)
-    console.log(`[Cache] MISS para a chave: ${cacheKey}. Buscando no banco...`);
+   
     
     // 3. Buscar os dados do repositório real (PostgreSQL)
     const freshData = await fetcher();

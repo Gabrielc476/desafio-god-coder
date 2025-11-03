@@ -16,8 +16,7 @@ import {
 } from '@/domain/services/IAssistantService';
 
 // --- Definição das Ferramentas (Function Calling) ---
-// Esta é a definição exata das "funções" (os nossos casos de uso)
-// que o Gemini pode solicitar que o nosso backend execute.
+// (Todo o seu código de 'analyticsTools' permanece aqui, idêntico)
 const analyticsTools: FunctionDeclarationsTool[] = [
   {
     functionDeclarations: [
@@ -137,6 +136,9 @@ export class GeminiAssistantService implements IAssistantService {
   constructor(localTodayDate: string) {
     this.apiKey = process.env.GEMINI_API_KEY || '';
     if (!this.apiKey) {
+      // --- LOG ADICIONADO AQUI TAMBÉM ---
+      console.error("--- [GeminiService] ERRO FATAL: GEMINI_API_KEY não encontrada no .env ---");
+      // --- FIM DO LOG ---
       throw new Error('GEMINI_API_KEY não encontrada no .env');
     }
 
@@ -278,13 +280,36 @@ export class GeminiAssistantService implements IAssistantService {
       A sua análise:
     `;
 
+    // --- LOG 4: PROMPT ENVIADO ---
+    console.log('--- [GeminiService] explainData: INICIADO ---');
+    console.log('[GeminiService] Enviando o seguinte prompt para o chatModel:');
+    console.log(prompt);
+    console.log('--------------------------------------------------');
+    // --- FIM DO LOG 4 ---
+
     try {
       const result = await this.chatModel.generateContent(prompt);
       const response = result.response;
+
+      // --- LOG 5: RESPOSTA BRUTA DA API ---
+      // ESTE É O LOG MAIS IMPORTANTE. Ele mostrará o 'finishReason' (ex: SAFETY)
+      console.log('--- [GeminiService] Resposta BRUTA da API recebida: ---');
+      console.log(JSON.stringify(response, null, 2));
+      console.log('--------------------------------------------------');
+      // --- FIM DO LOG 5 ---
+      
       const text = response.text();
+
+      // --- LOG 6: TEXTO EXTRAÍDO ---
+      console.log(`[GeminiService] Texto extraído via response.text(): ${text ? text.substring(0, 100) + '...' : 'VAZIO'}`);
+      console.log('--- [GeminiService] explainData: FINALIZADO ---');
+      // --- FIM DO LOG 6 ---
+
       return text;
     } catch (error) {
-      console.error('Erro ao chamar a API do Gemini (Explain):', error);
+      // --- LOG 7: ERRO NA CHAMADA ---
+      console.error('--- [GeminiService] ERRO ao chamar a API do Gemini (Explain): ---', error);
+      // --- FIM DO LOG 7 ---
       if (error instanceof Error) {
         throw new Error(`Falha ao gerar análise dos dados: ${error.message}`);
       }
@@ -292,4 +317,3 @@ export class GeminiAssistantService implements IAssistantService {
     }
   }
 }
-

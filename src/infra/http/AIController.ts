@@ -65,8 +65,16 @@ export class AIController {
         dataJson,
       });
 
+      // --- *** LOG ADICIONADO *** ---
+      // Vamos logar o objeto exato que estamos enviando de volta
+      const responseObject = { explanation: explanationText };
+      console.log('--- [AIController] Objeto de resposta enviado para o frontend: ---');
+      console.log(JSON.stringify(responseObject, null, 2));
+      console.log('---------------------------------------------------------------');
+      // --- *** FIM DO LOG *** ---
+
       // 3. Retornar a explicação em texto
-      return res.status(200).json({ explanation: explanationText });
+      return res.status(200).json(responseObject); // Modificado para usar a variável do log
 
     } catch (error) {
       // Capturar erros
@@ -76,4 +84,3 @@ export class AIController {
     }
   }
 }
-
