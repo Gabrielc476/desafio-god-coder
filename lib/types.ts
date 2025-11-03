@@ -1,4 +1,4 @@
-// --- Tipos de Dados Brutos (Casos de Uso 1-7) ---
+
 
 export type RevenueDataPoint = {
   date: string
@@ -12,7 +12,7 @@ export type TopProduct = {
   totalRevenue: number
 }
 
-// Este tipo (camelCase) já corresponde ao que o log [DEBUG Canais] mostrou
+
 export type SalesByChannel = {
   channelId: number
   channelName: string
@@ -20,18 +20,14 @@ export type SalesByChannel = {
   totalRevenue: number
 }
 
-// Este tipo foi corrigido e permanece (snake_case)
-// pois a função getAverageTicket está adaptando
+
 export type AverageTicket = {
   average_ticket: number
   totalSales: number
   total_revenue: number
 }
 
-/**
- * *** CORRIGIDO ***
- * Este tipo agora reflete EXATAMENTE o que a API envia (baseado no seu log).
- */
+
 export type SalesHeatmapPoint = {
   hour: number
   channelId: number
@@ -40,7 +36,7 @@ export type SalesHeatmapPoint = {
   totalRevenue: number
 }
 
-// Este tipo (camelCase) já corresponde ao que o log [DEBUG Pagamentos] mostrou
+
 export type SalesByPaymentType = {
   paymentTypeId: number
   paymentTypeName: string
@@ -48,7 +44,7 @@ export type SalesByPaymentType = {
   totalTransactions: number
 }
 
-// Este tipo (camelCase) já corresponde ao que o log [DEBUG Clientes] mostrou
+
 export type RfmCustomer = {
   customerId: number
   customerName: string
@@ -58,8 +54,7 @@ export type RfmCustomer = {
 }
 
 
-// --- Tipos para a IA (Casos de Uso 8-9) ---
-// (ChatMessage, AIChatRequest, etc. permanecem iguais)
+
 
 export type ChatMessage = {
   role: 'user' | 'model'
@@ -76,18 +71,13 @@ export type AIExplainRequest = {
   dataJson: string
 }
 
-/**
- * (Caso de Uso 9) O payload esperado da API /ai/explain
- */
+
 export type AIExplainResponse = {
-  // --- A MUDANÇA ESTÁ AQUI ---
-  // Trocado de 'response' para 'explanation' para bater com o backend
+  
   explanation: string
 }
 
-/**
- * O estado padrão para Server Actions de IA
- */
+
 export type AIActionState<T> = {
   data: T | null
   error: string | null

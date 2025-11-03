@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { useGlobalState } from '@/contexts/global-state-provider'
 import { getHeatmapDataAction, HeatmapData } from '@/lib/actions' // <-- Nova Action
-import { SalesHeatmapChart } from '@/components/analytics/sales-heatmap-chart' // <-- Novo Gráfico
-import { SalesHeatmapTable } from '@/components/analytics/sales-heatmap-table' // <-- Tabela Existente
+import { SalesHeatmapChart } from '@/components/analytics/charts/sales-heatmap-chart' // <-- Novo Gráfico
+import { SalesHeatmapTable } from '@/components/analytics/tables/sales-heatmap-table' // <-- Tabela Existente
 import { Skeleton } from '@/components/ui/skeleton'
 
 // Skeletons para o estado de carregamento

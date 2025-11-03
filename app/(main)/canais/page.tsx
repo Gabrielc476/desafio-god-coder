@@ -1,135 +1,127 @@
-'use client' // <-- PASSO 1: Transformar em Client Component
+'use client'
 
 import React, { useState, useEffect } from 'react'
-
-// Hooks e Componentes
-import { useGlobalState } from '@/contexts/global-state-provider' // <-- O nosso hook global
+import { useGlobalState } from '@/contexts/global-state-provider'
+import { getCanaisDataAction, CanaisData } from '@/lib/actions'
+import { SalesByChannelChart } from '@/components/analytics/charts/sales-by-channel-chart'
 import {
-  getCanaisDataAction,
-  CanaisData,
-  HeatmapData, // <-- Já importado por você
-  getHeatmapDataAction, // <-- Já importado por você
-} from '@/lib/actions'
-import { SalesByChannelChart } from '@/components/analytics/sales-by-channel-chart'
-import { SalesHeatmapTable } from '@/components/analytics/sales-heatmap-table'
+  SalesByChannelTable,
+  SalesByChannelTableLoader,
+} from '@/components/analytics/tables/sales-by-channel-table'
+import { KpiCard } from '@/components/analytics/kpi-card' // 1. Importar KPI Card
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { formatCurrency } from '@/lib/utils' // 2. Importar helper de formatação
 
-// Componente de Carregamento (Loading Skeleton) para o Gráfico
-function ChannelChartSkeleton() {
-  return <Skeleton className="h-[350px] w-full" />
+// 3. Criar um Loader para a página inteira (KPIs + Gráfico + Tabela)
+function CanaisPageLoader() {
+  return (
+    <div className="space-y-4">
+      {/* Skeletons para os KPIs */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Skeleton className="h-[120px]" />
+        <Skeleton className="h-[120px]" />
+        <Skeleton className="h-[120px]" />
+      </div>
+      {/* Skeletons para Gráfico e Tabela */}
+      <div className="grid grid-cols-1 gap-4">
+        <Skeleton className="h-[450px] w-full" />
+        <SalesByChannelTableLoader />
+      </div>
+    </div>
+  )
 }
 
-// Componente de Carregamento (Loading Skeleton) para a Tabela
-function HeatmapTableSkeleton() {
-  return <Skeleton className="h-[400px] w-full" />
-}
-
-// *** CORREÇÃO: Criar um tipo combinado para o estado ***
-type CanaisPageData = CanaisData & HeatmapData
-
-/**
- * Página de Análise de Canais (Caso de Uso 3 e 5)
- * Refatorada para ser um Client Component.
- */
 export default function CanaisPage() {
-  // 1. Remover `async` e `searchParams`
-
-  // 2. Usar o contexto para ler a data
   const { dateRange } = useGlobalState()
-
-  // 3. Criar estado para os dados e carregamento
-  // *** CORREÇÃO: Usar o novo tipo combinado ***
-  const [data, setData] = useState<CanaisPageData | null>(null)
+  const [data, setData] = useState<CanaisData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // 4. Usar useEffect para buscar dados quando `dateRange` mudar
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true)
       try {
-        // *** CORREÇÃO: Buscar AMBOS os conjuntos de dados em paralelo ***
-        const [canaisData, heatmapData] = await Promise.all([
-          getCanaisDataAction(dateRange),
-          getHeatmapDataAction(dateRange),
-        ])
-
-        // *** CORREÇÃO: Combinar os resultados no estado ***
-        setData({
-          salesByChannel: canaisData.salesByChannel,
-          salesHeatmap: heatmapData.salesHeatmap,
-        })
+        const canaisData = await getCanaisDataAction(dateRange)
+        setData(canaisData)
       } catch (error) {
-        console.error('Erro ao buscar dados de canais ou heatmap:', error)
+        console.error('Erro ao buscar dados de canais:', error)
         setData(null)
       } finally {
         setIsLoading(false)
       }
     }
-
     fetchData()
-  }, [dateRange]) // <-- O gatilho é a mudança no contexto
+  }, [dateRange])
 
-  // 5. Renderizar o Loader
+  // 4. Renderizar o Loader da página
   if (isLoading || !data) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Análise de Canais</h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <div className="col-span-12 md:col-span-4">
-            <ChannelChartSkeleton />
-          </div>
-          <div className="col-span-12 md:col-span-3">
-            <HeatmapTableSkeleton />
-          </div>
-        </div>
+        <CanaisPageLoader />
       </div>
     )
   }
 
-  // 6. Se os dados existirem, renderizar os componentes
+  // 5. Calcular KPIs se os dados existirem
+  const { salesByChannel } = data
+  const hasData = salesByChannel.length > 0
+
+  // KPI 1: Canal Destaque
+  const topChannel = hasData
+    ? salesByChannel.reduce((max, channel) =>
+        channel.totalRevenue > max.totalRevenue ? channel : max,
+      )
+    : { channelName: 'N/A', totalRevenue: 0 }
+  const topChannelValue = formatCurrency(topChannel.totalRevenue)
+
+  // KPI 2: Total de Pedidos
+  const totalOrders = hasData
+    ? salesByChannel.reduce((sum, channel) => sum + channel.totalSales, 0)
+    : 0
+  const totalOrdersValue = totalOrders.toLocaleString('pt-BR')
+
+  // KPI 3: Canais Ativos
+  const activeChannelsValue = salesByChannel.length.toString()
+
+  // 6. Renderizar os Componentes (KPIs + Gráfico + Tabela)
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Análise de Canais</h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Card 1: Gráfico de Vendas por Canal (CU 3) */}
-        <Card className="col-span-12 md:col-span-4">
-          <CardHeader>
-            <CardTitle>Vendas por Canal</CardTitle>
-            <CardDescription>
-              Receita total e pedidos por canal de venda no período.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-[350px]">
-            {/* Agora acessa 'data.salesByChannel' */}
-            <SalesByChannelChart data={data.salesByChannel} />
-          </CardContent>
-        </Card>
+      {/* Grid de KPIs */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <KpiCard
+          title={hasData ? topChannel.channelName : 'Canal Destaque'}
+          value={topChannelValue}
+          description="Canal com maior receita no período"
+          size="default"
+        />
+        <KpiCard
+          title="Total de Pedidos"
+          value={totalOrdersValue}
+          description="Soma de pedidos de todos os canais"
+          size="default"
+        />
+        <KpiCard
+          title="Canais Ativos"
+          value={activeChannelsValue}
+          description="Canais que registraram vendas"
+          size="default"
+        />
+      </div>
 
-        {/* Card 2: Tabela de Mapa de Calor (CU 5) */}
-        <Card className="col-span-12 md:col-span-3">
-          <CardHeader>
-            <CardTitle>Horários de Pico</CardTitle>
-            <CardDescription>
-              Total de pedidos por dia da semana e hora.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Agora acessa 'data.salesHeatmap' */}
-            <SalesHeatmapTable data={data.salesHeatmap} />
-          </CardContent>
-        </Card>
+      {/* Grid de Gráfico e Tabela */}
+      <div className="grid grid-cols-1 gap-4">
+        <div>
+          <SalesByChannelChart data={salesByChannel} />
+        </div>
+        <div>
+          <SalesByChannelTable channels={salesByChannel} />
+        </div>
       </div>
     </div>
   )

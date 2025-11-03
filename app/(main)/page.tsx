@@ -1,13 +1,13 @@
-'use client' // <-- PASSO 1: Transformar em Client Component
+'use client'
 
 import React, { useState, useEffect } from 'react'
 
 // Hooks e Componentes
-import { useGlobalState } from '@/contexts/global-state-provider' // <-- Nosso hook global
-import { getDashboardDataAction, DashboardData } from '@/lib/actions' // <-- Nossa Server Action
+import { useGlobalState } from '@/contexts/global-state-provider'
+import { getDashboardDataAction, DashboardData } from '@/lib/actions'
 import { KpiCard } from '@/components/analytics/kpi-card'
-import { RevenueChart } from '@/components/analytics/revenue-chart'
-import { TopProductsTable } from '@/components/analytics/top-products-table'
+import { RevenueChart } from '@/components/analytics/charts/revenue-chart'
+import { TopProductsTable } from '@/components/analytics/tables/top-products-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Card,
@@ -22,10 +22,11 @@ function DashboardLoader() {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Skeleton className="h-[120px]" />
-        <Skeleton className="h-[120px]" />
-        <Skeleton className="h-[120px]" />
-        <Skeleton className="h-[120px]" />
+        {/* 1. Altura do Skeleton ajustada para o card maior */}
+        <Skeleton className="h-[138px]" />
+        <Skeleton className="h-[138px]" />
+        <Skeleton className="h-[138px]" />
+        <Skeleton className="h-[138px]" />
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
         <div className="col-span-1 lg:col-span-4">
@@ -51,21 +52,15 @@ const formatCurrency = (value: number | null | undefined) => {
 // --- A Página (Client Component) ---
 
 export default function DashboardPage() {
-  // 1. Remover `async` e `searchParams` da assinatura
-
-  // 2. Usar o contexto para ler a data (formato string 'YYYY-MM-DD')
+  // ... (lógica de state e effect permanece a mesma) ...
   const { dateRange } = useGlobalState()
-
-  // 3. Criar estado para os dados e carregamento
   const [data, setData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // 4. Usar useEffect para buscar dados quando `dateRange` mudar
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true)
       try {
-        // Chama a Server Action com as datas do contexto
         const dashboardData = await getDashboardDataAction(dateRange)
         setData(dashboardData)
       } catch (error) {
@@ -75,11 +70,9 @@ export default function DashboardPage() {
         setIsLoading(false)
       }
     }
-
     fetchData()
-  }, [dateRange]) // <-- O gatilho é a mudança no contexto
+  }, [dateRange])
 
-  // 5. Renderizar o Loader ou os Dados
   if (isLoading || !data) {
     return (
       <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
@@ -91,7 +84,6 @@ export default function DashboardPage() {
     )
   }
 
-  // 6. Se os dados existirem, formatar e renderizar
   const { averageTicket, topProducts, revenueOverTime, totalRevenue } = data
   const totalOrders = averageTicket.totalSales || 0
   const totalRevenueStr = formatCurrency(totalRevenue)
@@ -111,18 +103,20 @@ export default function DashboardPage() {
           title="Receita Total"
           value={totalRevenueStr}
           description="Soma de todos os pedidos no período"
+          size="large" // 2. Aplicar a prop 'size'
         />
         <KpiCard
           title="Ticket Médio"
           value={avgTicketStr}
           description="Receita total / Pedidos totais"
+          size="large" // 2. Aplicar a prop 'size'
         />
         <KpiCard
           title="Pedidos Totais"
           value={totalOrdersStr}
           description="Número total de pedidos concluídos"
+          size="large" // 2. Aplicar a prop 'size'
         />
-        <Skeleton className="h-[120px]" />
       </div>
 
       {/* Gráficos */}
@@ -135,7 +129,7 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80 w-full"> 
+            <div className="h-80 w-full">
               <RevenueChart data={revenueOverTime} />
             </div>
           </CardContent>

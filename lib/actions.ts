@@ -76,7 +76,7 @@ export async function getDashboardDataAction(
       totalSales: 0,
       total_revenue: 0,
     })),
-    api.getTopProducts(dateRange, 10).catch(() => []),
+    api.getTopProducts(dateRange, 10).catch(() => []), // Limite de 10 para o Dashboard
     api.getRevenueOverTime(dateRange, 'day').catch(() => []),
   ])
   const totalRevenue = (revenueOverTime || []).reduce(
@@ -89,6 +89,19 @@ export async function getDashboardDataAction(
     revenueOverTime,
     totalRevenue,
   }
+}
+
+/**
+ * Server Action para a Página de Produtos (Top Products)
+ */
+export async function getTopProductsAction(
+  dateRange: DateRangeParams,
+): Promise<TopProduct[]> {
+  console.log(
+    `[Server Action] Buscando TOP PRODUTOS para ${dateRange.from} a ${dateRange.to}`,
+  )
+  // Usamos um limite alto (100) para o relatório dedicado de produtos
+  return api.getTopProducts(dateRange, 100).catch(() => [])
 }
 
 /**
@@ -137,7 +150,6 @@ export async function getHeatmapDataAction(
 }
 
 /**
- * *** NOVA ACTION ***
  * Server Action para buscar os dados do Relatório Dinâmico
  */
 export async function getDynamicReportAction({
@@ -151,7 +163,7 @@ export async function getDynamicReportAction({
   // O 'switch' roteia para a função de API correta
   switch (dimension) {
     case 'product':
-      // Buscamos todos os produtos (limite alto)
+      // Buscamos todos os produtos (limite alto para relatório)
       return api.getTopProducts(dateRange, 200).catch(() => [])
     case 'channel':
       return api.getSalesByChannel(dateRange).catch(() => [])

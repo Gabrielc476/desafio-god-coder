@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { useGlobalState } from '@/contexts/global-state-provider'
 import { getDynamicReportAction, DynamicReportParams } from '@/lib/actions'
-import { DynamicReportTable } from '@/components/analytics/dynamic-report-table'
+import { DynamicReportTable } from '@/components/analytics/tables/dynamic-report-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import {

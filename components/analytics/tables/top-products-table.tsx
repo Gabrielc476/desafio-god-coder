@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { TopProduct } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { ExplainDataButton } from './explain-data-button';
+import { ExplainDataButton } from '../explain-data-button';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface TopProductsTableProps {

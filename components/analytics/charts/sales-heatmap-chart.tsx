@@ -9,7 +9,7 @@ import {
   ZAxis,
   Tooltip,
   Legend,
-  Cell,
+  CartesianGrid,
 } from 'recharts'
 import {
   Card,
@@ -19,16 +19,16 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { SalesHeatmapPoint } from '@/lib/types'
-import { ExplainDataButton } from './explain-data-button'
+import { ExplainDataButton } from '../explain-data-button'
 
-// Cores para os canais (as mesmas do gráfico de pizza)
+// --- MUDANÇA 1: Cores com maior contraste ---
 const COLORS = [
-  '#0088FE', // Azul
-  '#00C49F', // Verde
-  '#FFBB28', // Amarelo
-  '#FF8042', // Laranja
-  '#8884D8', // Roxo
-  '#E36414', // Vermelho
+  '#0088FE', // Azul (Vibrant Blue)
+  '#00C49F', // Verde (Teal)
+  '#FFBB28', // Amarelo (Yellow)
+  '#FF80E1', // Rosa/Magenta (Pink)
+  '#8884D8', // Roxo (Purple)
+  '#D92D20', // Vermelho (Strong Red)
 ]
 
 // Helper para formatar moeda
@@ -54,21 +54,25 @@ export function SalesHeatmapChart({ data }: SalesHeatmapChartProps) {
       hora: `${item.hour}:00`,
       canal: item.channelName,
       receita: item.totalRevenue,
-    }))
+    })),
   )
 
-  // *** A CORREÇÃO PRINCIPAL: Mapear nomes de canais para IDs numéricos ***
-  const uniqueChannels = Array.from(new Set(data.map(item => item.channelName))).sort()
-  const channelNameToId = new Map(uniqueChannels.map((name, index) => [name, index]))
-  const channelIdToName = new Map(uniqueChannels.map((name, index) => [index, name]))
+  // Mapeamento de canais para IDs e Cores (lógica existente)
+  const uniqueChannels = Array.from(
+    new Set(data.map((item) => item.channelName)),
+  ).sort()
+  const channelNameToId = new Map(
+    uniqueChannels.map((name, index) => [name, index]),
+  )
+  const channelIdToName = new Map(
+    uniqueChannels.map((name, index) => [index, name]),
+  )
 
-  // Mapeia os dados brutos para um formato que o Recharts entende no YAxis
-  const formattedData = data.map(item => ({
+  const formattedData = data.map((item) => ({
     ...item,
-    channelId: channelNameToId.get(item.channelName)!, // Adiciona o ID numérico do canal
-  }));
+    channelId: channelNameToId.get(item.channelName)!,
+  }))
 
-  // Mapeia canais únicos para cores (usado para as bolhas)
   const channelColors = new Map<string, string>()
   uniqueChannels.forEach((name, index) => {
     channelColors.set(name, COLORS[index % COLORS.length])
@@ -99,49 +103,43 @@ export function SalesHeatmapChart({ data }: SalesHeatmapChartProps) {
                 left: 20,
               }}
             >
+              <CartesianGrid strokeDasharray="3 3" />
+
+              {/* --- MUDANÇA 2: Ticks (intervalos) de 4 em 4 horas --- */}
               <XAxis
                 dataKey="hour"
                 type="number"
-                domain={[0, 23]} // Garante que o eixo vá de 0 a 23
+                domain={[0, 23]}
                 tickFormatter={formatHour}
                 name="Hora"
-                allowDuplicatedCategory={false} // Importante para eixos de categoria
+                allowDuplicatedCategory={false}
+                ticks={[0, 3, 6, 9, 12, 15, 18, 21, 23]} // <-- FORÇA OS INTERVALOS
               />
               <YAxis
-                dataKey="channelId" // *** MUDANÇA: Usamos o ID numérico aqui ***
+                dataKey="channelId"
                 type="number"
-                domain={[-1, uniqueChannels.length]} // Para espaçamento adequado
+                domain={[-1, uniqueChannels.length]}
                 tickCount={uniqueChannels.length}
-                tickFormatter={(tick) => channelIdToName.get(tick) || ''} // *** MUDANÇA: Formata para o nome do canal ***
+                tickFormatter={(tick) => channelIdToName.get(tick) || ''}
                 name="Canal"
                 allowDuplicatedCategory={false}
               />
-              {/* O ZAxis define qual chave controla o tamanho (range) */}
               <ZAxis
                 dataKey="totalRevenue"
-                range={[100, 1000]} // Tamanho da bolha (min, max)
+                range={[100, 1000]}
                 name="Receita"
               />
               <Tooltip
                 cursor={{ strokeDasharray: '3 3' }}
-                // *** MUDANÇA: Ajuste do formatter para exibir o nome do canal ***
-                formatter={(value: any, name: string, props: any) => {
-                  if (name === 'Receita') return [formatCurrency(value), name]
-                  if (name === 'Hora') return [`${value}:00`, name]
-                  if (name === 'Canal') { // Identifica o tick do canal e busca o nome
-                    const channelName = channelIdToName.get(value as number)
-                    return [channelName || 'N/A', name]
-                  }
-                  return [value, name]
-                }}
-                // *** MUDANÇA: Content para exibir o nome do canal no tooltip ***
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
-                    const dataPoint = payload[0].payload;
-                    const channelName = channelIdToName.get(dataPoint.channelId);
+                    const dataPoint = payload[0].payload
+                    const channelName = channelIdToName.get(dataPoint.channelId)
                     return (
                       <div className="rounded-lg border bg-background p-2 shadow-md">
-                        <p className="text-sm font-bold">{channelName || 'N/A'}</p>
+                        <p className="text-sm font-bold">
+                          {channelName || 'N/A'}
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           Hora: {dataPoint.hour}:00
                         </p>
@@ -149,21 +147,30 @@ export function SalesHeatmapChart({ data }: SalesHeatmapChartProps) {
                           Receita: {formatCurrency(dataPoint.totalRevenue)}
                         </p>
                       </div>
-                    );
+                    )
                   }
-                  return null;
+                  return null
                 }}
               />
               <Legend />
-              <Scatter name="Receita por Hora" data={formattedData}> {/* *** MUDANÇA: Usa formattedData *** */}
-                {formattedData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${entry.channelId}-${entry.hour}`} // Chave mais única
-                    fill={channelColors.get(entry.channelName) || '#333'}
+
+              {/* Renderiza um <Scatter> para cada canal */}
+              {uniqueChannels.map((channelName) => {
+                const channelData = formattedData.filter(
+                  (item) => item.channelName === channelName,
+                )
+                const color = channelColors.get(channelName) || '#333'
+
+                return (
+                  <Scatter
+                    key={channelName}
+                    name={channelName}
+                    data={channelData}
+                    fill={color}
                     opacity={0.7}
                   />
-                ))}
-              </Scatter>
+                )
+              })}
             </ScatterChart>
           </ResponsiveContainer>
         </div>
