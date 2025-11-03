@@ -1,19 +1,25 @@
 import express from 'express';
 import 'dotenv/config'; // Garante que o .env seja carregado
+import cors from 'cors'; // 1. Importar o CORS
 import { analyticsRouter } from './routes/analytics.routes';
-import { aiRouter } from './routes/ai.routes'; // 1. Importar o novo router
+import { aiRouter } from './routes/ai.routes';
 
 const app = express();
 const port = process.env.PORT || 3333;
 
+// 2. Configurar o CORS para permitir requisições do seu frontend
+// (Lembre-se: npm install cors)
+app.use(
+  cors({
+    origin: 'http://localhost:3000', // URL do seu frontend Next.js
+  })
+);
+
 app.use(express.json()); // Middleware para parsear JSON
 
 // --- Rotas da API ---
-
-// Rotas de Análise (KPIs, Gráficos)
+// (Estas URLs agora correspondem ao frontend)
 app.use('/api/v1/analytics', analyticsRouter);
-
-// 2. Usar o novo router de IA
 app.use('/api/v1/ai', aiRouter);
 
 // Rota de verificação de saúde
@@ -33,4 +39,3 @@ const start = () => {
 };
 
 start();
-
