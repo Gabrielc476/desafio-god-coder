@@ -1,123 +1,103 @@
-'use client';
+'use client'
 
-import * as React from 'react';
-import { Sparkles, Loader2 } from 'lucide-react';
-import { useActionState } from 'react';
-
-import { Button } from '@/components/ui/button';
+import { useActionState, useState, useEffect } from 'react'
+import { Loader2, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { explainDataAction } from '@/lib/actions'; // CORREÇÃO: 'in' para 'from'
-import { AIActionState } from '@/lib/types'; // CORREÇÃO: Importar o tipo de estado correto
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { explainDataAction } from '@/lib/actions'
+import { AIActionState } from '@/lib/types'
 
-// CORREÇÃO: Removida a interface 'ExplainActionState' local. Usaremos 'AIActionState'
-
-// CORREÇÃO: Removido 'ButtonProps', estendido de 'ButtonHTMLAttributes'
-interface ExplainDataButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  dataContext: string; // Ex: "Estes são os meus 5 produtos mais vendidos"
-  dataJson: string; // Ex: JSON.stringify(products)
+interface ExplainDataButtonProps {
+  dataContext: string
+  dataJson: string
 }
 
 export function ExplainDataButton({
   dataContext,
   dataJson,
-  // CORREÇÃO: Removido 'children', pois não é usado
-  ...props
 }: ExplainDataButtonProps) {
-  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  // Hook 'useActionState' (React 19) para gerenciar a chamada da Server Action
-  const [state, formAction, isPending] = useActionState(
-    explainDataAction, // A Server Action que importamos
-    // CORREÇÃO: Usar o estado inicial correto com 'data'
-    { data: null, error: null } as AIActionState<string>
-  );
+  // O useActionState está correto
+  const [state, handleSubmit, isPending] = useActionState(explainDataAction, {
+    data: null,
+    error: null,
+  })
 
-  // Efeito para observar a mudança no 'state' e abrir o Sheet
-  React.useEffect(() => {
-    // CORREÇÃO: Verificar 'state.data' em vez de 'state.response'
-    if (!isPending && (state.data || state.error)) {
-      setIsSheetOpen(true); // ...abrimos o Sheet para mostrar o resultado.
+  // Efeito para abrir o modal quando os dados chegarem
+  useEffect(() => {
+    if (state.data || state.error) {
+      setIsModalOpen(true)
     }
-  }, [state, isPending]);
+  }, [state])
 
-  // Função para lidar com o clique
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // Cria um FormData e dispara a Server Action
-    const formData = new FormData();
-    formData.append('dataContext', dataContext);
-    formData.append('dataJson', dataJson);
-    formAction(formData); // CORREÇÃO: Isso agora está correto após o ajuste de tipo.
-  };
+  // Limpa o estado ao fechar o modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    // NOTA: O 'state' não pode ser resetado diretamente
+    //       mas o React 19 pode ter uma API `form.reset()`
+  }
 
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <Button
-          type="submit"
-          variant="outline"
-          size="icon"
-          disabled={isPending}
-          {...props}
-        >
+    <div>
+      {/* *** A CORREÇÃO ESTÁ AQUI ***
+        'onSubmit' foi substituído por 'action'.
+        Isso informa ao React para tratar 'handleSubmit' 
+        como uma Server Action, corrigindo o erro de transição.
+      */}
+      <form action={handleSubmit}>
+        <input type="hidden" name="dataContext" value={dataContext} />
+        <input type="hidden" name="dataJson" value={dataJson} />
+        <Button type="submit" variant="outline" size="sm" disabled={isPending}>
           {isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="mr-2 h-4 w-4" />
           )}
-          <span className="sr-only">Explicar dados com IA</span>
+          Explicar
         </Button>
       </form>
 
-      {/* O Sheet (gaveta) que mostrará a resposta da IA */}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent className="sm:max-w-lg">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-purple-500" />
-              Nola IA - Análise
-            </SheetTitle>
-            <SheetDescription>
-              {/* O contexto que enviamos para a IA */}
-              {dataContext}
-            </SheetDescription>
-          </SheetHeader>
-          <ScrollArea className="h-[calc(100%-120px)] w-full pr-4 mt-4">
-            <div className="space-y-4">
-              {/* CORREÇÃO: Verificar 'state.data' */}
-              {isPending && !state.data && (
-                <div className="flex items-center justify-center py-10">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              )}
-
-              {state.error && (
-                <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
-                  <strong>Erro ao analisar:</strong> {state.error}
-                </div>
-              )}
-
-              {/* CORREÇÃO: Verificar 'state.data' */}
-              {state.data && (
-                // Renderiza a resposta da IA (idealmente como Markdown)
-                <div
-                  className="prose prose-sm dark:prose-invert"
-                  // CORREÇÃO: Usar 'state.data'
-                  dangerouslySetInnerHTML={{ __html: state.data.replace(/\n/g, '<br />') }}
-                />
-              )}
-            </div>
+      {/* Modal para exibir a resposta */}
+      <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle>
+              <Sparkles className="mr-2 inline-block h-5 w-5 text-primary" />
+              Análise da IA
+            </DialogTitle>
+            <DialogDescription>
+              A IA analisou os dados selecionados e gerou este resumo.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh] p-4">
+            {state.error && (
+              <div className="text-sm text-destructive">{state.error}</div>
+            )}
+            {state.data && (
+              <div className="prose prose-sm dark:prose-invert">
+                {/* Usamos 'white-space: pre-wrap' para preservar 
+                  as quebras de linha e formatação do Markdown da IA 
+                */}
+                <p style={{ whiteSpace: 'pre-wrap' }}>{state.data}</p>
+              </div>
+            )}
           </ScrollArea>
-        </SheetContent>
-      </Sheet>
-    </>
-  );
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseModal}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
 }
-
