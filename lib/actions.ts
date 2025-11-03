@@ -229,10 +229,24 @@ export async function explainDataAction(
   previousState: AIActionState<string>,
   formData: FormData,
 ): Promise<AIActionState<string>> {
+  console.log('--- [explainDataAction] INICIADA ---')
+
   const dataContext = formData.get('dataContext') as string
   const dataJson = formData.get('dataJson') as string
 
+  console.log(
+    `[explainDataAction] Contexto: ${
+      dataContext ? dataContext.substring(0, 70) + '...' : 'NULO'
+    }`,
+  )
+  console.log(
+    `[explainDataAction] JSON: ${
+      dataJson ? dataJson.substring(0, 70) + '...' : 'NULO'
+    }`,
+  )
+
   if (!dataContext || !dataJson) {
+    console.error('[explainDataAction] ERRO: Contexto ou JSON ausentes.')
     return { data: null, error: 'Contexto e dados são obrigatórios.' }
   }
 
@@ -241,24 +255,53 @@ export async function explainDataAction(
     dataJson,
   }
 
+  const url = `${API_URL}/ai/explain`
+  console.log(`[explainDataAction] Enviando request para: ${url}`)
+
   try {
-    const res = await fetch(`${API_URL}/ai/explain`, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
       cache: 'no-store',
     })
 
+    console.log(
+      `[explainDataAction] Resposta da API recebida. Status: ${res.status}`,
+    )
+
     if (!res.ok) {
-      const errorBody = await res.json()
-      console.error('Erro da API Backend (/ai/explain):', errorBody)
-      return { data: null, error: errorBody.error || 'Erro ao gerar explicação.' }
+      const errorBody = await res
+        .json()
+        .catch(() => ({ error: 'Resposta de erro ilegível ou sem corpo' }))
+      console.error(
+        '[explainDataAction] ERRO da API Backend (/ai/explain):',
+        errorBody,
+      )
+      return {
+        data: null,
+        error: errorBody.error || `Erro ${res.status} ao gerar explicação.`,
+      }
     }
 
+    // A 'data' agora será do tipo { explanation: string }
     const data: AIExplainResponse = await res.json()
-    return { data: data.response, error: null }
+
+    // --- *** A CORREÇÃO ESTÁ AQUI *** ---
+    // Trocamos 'data.response' por 'data.explanation' para alinhar com o backend.
+    // Também atualizei o log para usar a chave correta.
+    console.log(
+      '[explainDataAction] SUCESSO: Dados da IA recebidos:',
+      data.explanation ? data.explanation.substring(0, 100) + '...' : 'VAZIO',
+    )
+    return { data: data.explanation, error: null }
   } catch (error) {
-    console.error('Erro de rede na explainDataAction:', error)
-    return { data: null, error: 'Erro de rede ao conectar com a IA.' }
+    console.error('[explainDataAction] ERRO de Rede/Fetch:', error)
+    // @ts-ignore
+    const errorMessage = error.message || 'Erro de rede desconhecido.'
+    return {
+      data: null,
+      error: `Erro de rede ao conectar com a IA: ${errorMessage}`,
+    }
   }
 }

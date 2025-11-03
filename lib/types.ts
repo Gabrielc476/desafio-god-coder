@@ -76,10 +76,18 @@ export type AIExplainRequest = {
   dataJson: string
 }
 
+/**
+ * (Caso de Uso 9) O payload esperado da API /ai/explain
+ */
 export type AIExplainResponse = {
-  response: string
+  // --- A MUDANÇA ESTÁ AQUI ---
+  // Trocado de 'response' para 'explanation' para bater com o backend
+  explanation: string
 }
 
+/**
+ * O estado padrão para Server Actions de IA
+ */
 export type AIActionState<T> = {
   data: T | null
   error: string | null
