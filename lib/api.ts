@@ -115,7 +115,7 @@ async function getSalesByChannel(dates: { from: string; to: string }): Promise<S
 }
 
 async function getAverageTicket(dates: { from: string; to: string }): Promise<AverageTicket> {
-  console.log('average ticket foi chamado')
+  
   const params = new URLSearchParams({
     startDate: dates.from,
     endDate: dates.to,

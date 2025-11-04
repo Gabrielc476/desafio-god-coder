@@ -168,7 +168,7 @@ export function SalesByChannelChart({ data }: SalesByChannelChartProps) {
                 >
                   {data.map((entry, index) => (
                     <Cell
-                      key={`cell-${entry.channelName}`}
+                      key={`cell-${entry.channelId}`}
                       fill={COLORS[index % COLORS.length]}
                     />
                   ))}
@@ -180,7 +180,7 @@ export function SalesByChannelChart({ data }: SalesByChannelChartProps) {
         {/* LEGENDA CUSTOMIZADA (só com nomes) */}
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 pt-4">
           {data.map((item, index) => (
-            <div key={item.channelName} className="flex items-center gap-2">
+            <div key={item.channelId} className="flex items-center gap-2">
               <span
                 className="h-3 w-3 rounded-full"
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}

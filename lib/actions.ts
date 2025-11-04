@@ -67,9 +67,7 @@ export type DynamicReportParams = {
 export async function getDashboardDataAction(
   dateRange: DateRangeParams,
 ): Promise<DashboardData> {
-  console.log(
-    `[Server Action] Buscando dados para ${dateRange.from} a ${dateRange.to}`,
-  )
+  
   const [averageTicket, topProducts, revenueOverTime] = await Promise.all([
     api.getAverageTicket(dateRange).catch(() => ({
       average_ticket: 0,
@@ -108,8 +106,42 @@ export async function getTopProductsAction(
 export async function getCanaisDataAction(
   dateRange: DateRangeParams,
 ): Promise<CanaisData> {
-  
-  const salesByChannel = await api.getSalesByChannel(dateRange).catch(() => [])
+  // 1. Busca os dados brutos da API, que podem conter duplicatas
+  const salesByChannelRaw = await api.getSalesByChannel(dateRange).catch(() => [])
+
+  // --- INÍCIO DA CORREÇÃO ---
+
+  // 2. Agrega os dados por 'channelName'
+  // Usamos .reduce() para criar um mapa (objeto) onde a chave é o 'channelName'.
+  const aggregatedMap = salesByChannelRaw.reduce(
+    (acc, channel) => {
+      const name = channel.channelName
+
+      if (!acc[name]) {
+        // Se é a primeira vez que vemos esse 'channelName',
+        // criamos uma nova entrada (copiando o objeto com spread '...').
+        acc[name] = { ...channel }
+      } else {
+        // Se o 'channelName' já existe no nosso mapa, somamos os valores.
+        acc[name].totalSales += channel.totalSales
+        acc[name].totalRevenue += channel.totalRevenue
+      }
+
+      return acc
+    },
+    {} as Record<string, SalesByChannel>, // O acumulador (acc) é um mapa de string -> SalesByChannel
+  )
+
+  // 3. Converte o mapa agregado de volta para um array
+  const salesByChannel = Object.values(aggregatedMap)
+
+  // 4. (Opcional) Ordena o resultado final por receita, já que a agregação
+  // pode ter bagunçado a ordem original.
+  salesByChannel.sort((a, b) => b.totalRevenue - a.totalRevenue)
+
+  // --- FIM DA CORREÇÃO ---
+
+  // 5. Retorna os dados limpos e agregados
   return {
     salesByChannel,
   }
