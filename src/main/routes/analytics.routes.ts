@@ -1,20 +1,20 @@
 import { Router } from 'express';
-import { PgAnalyticsRepository } from '@/infra/database/PgAnalyticsRepository';
-import { AnalyticsController } from '@/infra/http/AnalyticsController';
+import { PgAnalyticsRepository } from '../../infra/database/PgAnalyticsRepository';
+import { AnalyticsController } from '../../infra/http/AnalyticsController';
 
 // --- NOVO: Importar as dependências de Cache ---
-import { redisClient } from '@/infra/cache/redis';
-import { RedisAnalyticsRepository } from '@/infra/cache/RedisAnalyticsRepository';
+import { redisClient } from '../../infra/cache/redis';
+import { RedisAnalyticsRepository } from '../../infra/cache/RedisAnalyticsRepository';
 // --- FIM DA NOVIDADE ---
 
 // Importar todos os casos de uso
-import { GetTopProductsUseCase } from '@/application/use-cases/analytics/GetTopProductsUseCase';
-import { GetRevenueOverTimeUseCase } from '@/application/use-cases/analytics/GetRevenueOverTimeUseCase';
-import { GetSalesByChannelUseCase } from '@/application/use-cases/analytics/GetSalesByChannelUseCase';
-import { GetOverallAverageTicketUseCase } from '@/application/use-cases/analytics/GetOverallAverageTicketUseCase';
-import { GetSalesHeatmapUseCase } from '@/application/use-cases/analytics/GetSalesHeatmapUseCase';
-import { GetSalesByPaymentTypeUseCase } from '@/application/use-cases/analytics/GetSalesByPaymentTypeUseCase';
-import { GetCustomerRFMUseCase } from '@/application/use-cases/analytics/GetCustomerRFMUseCase';
+import { GetTopProductsUseCase } from '../../application/use-cases/analytics/GetTopProductsUseCase';
+import { GetRevenueOverTimeUseCase } from '../../application/use-cases/analytics/GetRevenueOverTimeUseCase';
+import { GetSalesByChannelUseCase } from '../../application/use-cases/analytics/GetSalesByChannelUseCase';
+import { GetOverallAverageTicketUseCase } from '../../application/use-cases/analytics/GetOverallAverageTicketUseCase';
+import { GetSalesHeatmapUseCase } from '../../application/use-cases/analytics/GetSalesHeatmapUseCase';
+import { GetSalesByPaymentTypeUseCase } from '../../application/use-cases/analytics/GetSalesByPaymentTypeUseCase';
+import { GetCustomerRFMUseCase } from '../../application/use-cases/analytics/GetCustomerRFMUseCase';
 
 /**
  * Ponto de Composição (Composition Root) para o Contexto de Analytics.

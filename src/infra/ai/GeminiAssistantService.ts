@@ -16,7 +16,6 @@ import {
 } from '@/domain/services/IAssistantService';
 
 // --- Definição das Ferramentas (Function Calling) ---
-// (Todo o seu código de 'analyticsTools' permanece aqui, idêntico)
 const analyticsTools: FunctionDeclarationsTool[] = [
   {
     functionDeclarations: [
@@ -129,16 +128,12 @@ export class GeminiAssistantService implements IAssistantService {
   private chatModel: GenerativeModel;
   private apiKey: string;
 
-  // --- CORREÇÃO DE ARQUITETURA (Inversão de Dependência) ---
-  // A camada de Infra (este ficheiro) não deve importar da Aplicação.
-  // Em vez disso, recebemos os dados necessários (a data de hoje) 
-  // no construtor.
   constructor(localTodayDate: string) {
     this.apiKey = process.env.GEMINI_API_KEY || '';
     if (!this.apiKey) {
-      // --- LOG ADICIONADO AQUI TAMBÉM ---
-      console.error("--- [GeminiService] ERRO FATAL: GEMINI_API_KEY não encontrada no .env ---");
-      // --- FIM DO LOG ---
+      
+     
+      
       throw new Error('GEMINI_API_KEY não encontrada no .env');
     }
 
@@ -154,7 +149,7 @@ export class GeminiAssistantService implements IAssistantService {
       3.  **PERGUNTAS COMPLEXAS:** Se a pergunta for complexa (ex: "top produto NO horário de pico"), chame a primeira ferramenta necessária (ex: 'getSalesHeatmap' para encontrar o horário de pico). O sistema retornará os dados. Você então usará esses dados para decidir o próximo passo (ex: chamar 'getTopSellingProducts' com o filtro de hora).
       4.  **USE O CONTEXTO DE DATA:** Sempre use as datas acima para interpretar "hoje" (${localTodayDate}), "ontem", "este mês", etc.
     `;
-    // --- FIM DA CORREÇÃO ---
+    
 
     const genAI = new GoogleGenerativeAI(this.apiKey);
 
@@ -280,36 +275,19 @@ export class GeminiAssistantService implements IAssistantService {
       A sua análise:
     `;
 
-    // --- LOG 4: PROMPT ENVIADO ---
-    console.log('--- [GeminiService] explainData: INICIADO ---');
-    console.log('[GeminiService] Enviando o seguinte prompt para o chatModel:');
-    console.log(prompt);
-    console.log('--------------------------------------------------');
-    // --- FIM DO LOG 4 ---
+    
 
     try {
       const result = await this.chatModel.generateContent(prompt);
       const response = result.response;
 
-      // --- LOG 5: RESPOSTA BRUTA DA API ---
-      // ESTE É O LOG MAIS IMPORTANTE. Ele mostrará o 'finishReason' (ex: SAFETY)
-      console.log('--- [GeminiService] Resposta BRUTA da API recebida: ---');
-      console.log(JSON.stringify(response, null, 2));
-      console.log('--------------------------------------------------');
-      // --- FIM DO LOG 5 ---
       
       const text = response.text();
 
-      // --- LOG 6: TEXTO EXTRAÍDO ---
-      console.log(`[GeminiService] Texto extraído via response.text(): ${text ? text.substring(0, 100) + '...' : 'VAZIO'}`);
-      console.log('--- [GeminiService] explainData: FINALIZADO ---');
-      // --- FIM DO LOG 6 ---
 
       return text;
     } catch (error) {
-      // --- LOG 7: ERRO NA CHAMADA ---
-      console.error('--- [GeminiService] ERRO ao chamar a API do Gemini (Explain): ---', error);
-      // --- FIM DO LOG 7 ---
+      
       if (error instanceof Error) {
         throw new Error(`Falha ao gerar análise dos dados: ${error.message}`);
       }
