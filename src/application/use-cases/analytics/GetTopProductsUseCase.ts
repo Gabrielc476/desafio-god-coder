@@ -1,7 +1,7 @@
 // Importamos o CONTRATO (Interface) do Domínio, não a implementação.
 import { IAnalyticsRepository } from '@/domain/repositories/IAnalyticsRepository';
 import { TopProductDTO } from '@/domain/dtos/TopProductDTO';
-import { IGetTopProductsInput } from '../../dtos/IGetTopProductsInput'; // Importado do novo local
+import { IGetTopProductsInput } from '../../dtos/analytics/IGetTopProductsInput'; // Importado do novo local
 
 // A interface IGetTopProductsInput foi removida daqui
 

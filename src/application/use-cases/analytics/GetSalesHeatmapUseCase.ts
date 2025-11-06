@@ -1,5 +1,5 @@
 // 1. Importar o DTO de Input
-import { IGetSalesHeatmapInput } from "@/application/dtos/IGetSalesHeatmapInput";
+import { IGetSalesHeatmapInput } from "@/application/dtos/analytics/IGetSalesHeatmapInput";
 // 2. Importar o DTO de Output e a Interface (Contrato) do Domínio
 import {
   IAnalyticsRepository,

@@ -1,6 +1,6 @@
 import { Product } from '@/domain/entities/Product';
 import { IRepository } from '@/domain/repositories/IRepository';
-import { IFindProductInput } from '@/application/dtos/IFindProductInput';
+import { IFindProductInput } from '@/application/dtos/product/IFindProductInput';
 
 /**
  * Caso de uso para buscar um único produto pelo seu ID.

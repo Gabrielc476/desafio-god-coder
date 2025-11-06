@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { AskGeminiAnalyticsUseCase } from '@/application/use-cases/ai/AskGeminiAnalyticsUseCase';
-import { IAskGeminiInput } from '@/application/dtos/IAskGeminiInput';
+import { IAskGeminiInput } from '@/application/dtos/ai/IAskGeminiInput';
 import { ExplainAnalyticsDataUseCase } from '@/application/use-cases/ai/ExplainAnalyticsDataUseCase';
-import { IExplainDataInput } from '@/application/dtos/IExplainDataInput';
+import { IExplainDataInput } from '@/application/dtos/ai/IExplainDataInput';
 
 /**
  * Controller (camada de Infra) para lidar com requisições HTTP

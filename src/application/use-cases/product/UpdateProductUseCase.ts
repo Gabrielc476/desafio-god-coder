@@ -1,6 +1,6 @@
 import { Product } from '@/domain/entities/Product';
 import { IRepository } from '@/domain/repositories/IRepository';
-import { IUpdateProductInput } from '@/application/dtos/IUpdateProductInput';
+import { IUpdateProductInput } from '@/application/dtos/product/IUpdateProductInput';
 
 /**
  * Caso de uso para atualizar um produto existente.

@@ -1,5 +1,5 @@
 import { IAnalyticsRepository } from '@/domain/repositories/IAnalyticsRepository';
-import { IGetSalesByChannelInput } from '../../dtos/IGetSalesByChannelInput';
+import { IGetSalesByChannelInput } from '../../dtos/analytics/IGetSalesByChannelInput';
 import { SalesByChannelDTO } from '@/domain/dtos/SalesByChannelDTO';
 
 

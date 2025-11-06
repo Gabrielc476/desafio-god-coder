@@ -1,5 +1,5 @@
 import { IAnalyticsRepository } from "@/domain/repositories/IAnalyticsRepository";
-import { IGetSalesByPaymentTypeInput } from "@/application/dtos/IGetSalesByPaymentTypeInput";
+import { IGetSalesByPaymentTypeInput } from "@/application/dtos/analytics/IGetSalesByPaymentTypeInput";
 import { SalesByPaymentTypeDTO } from "@/domain/dtos/SalesByPaymentTypeDTO";
 
 /**

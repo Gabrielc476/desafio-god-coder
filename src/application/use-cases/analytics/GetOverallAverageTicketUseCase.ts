@@ -1,5 +1,5 @@
 import { IAnalyticsRepository } from "@/domain/repositories/IAnalyticsRepository";
-import { IGetOverallAverageTicketInput } from "@/application/dtos/IGetOverallAverageTicketInput";
+import { IGetOverallAverageTicketInput } from "@/application/dtos/analytics/IGetOverallAverageTicketInput";
 import { OverallAverageTicketDTO } from "@/domain/dtos/OverallAverageTicketDTO";
 
 

@@ -1,5 +1,5 @@
 import { IAssistantService, AssistantResponseDTO, ChatHistory, FunctionCallDTO } from "@/domain/services/IAssistantService";
-import { IAskGeminiInput } from "../../dtos/IAskGeminiInput";
+import { IAskGeminiInput } from "../../dtos/ai/IAskGeminiInput";
 import { GetTopProductsUseCase } from "../analytics/GetTopProductsUseCase";
 import { GetRevenueOverTimeUseCase } from "../analytics/GetRevenueOverTimeUseCase";
 import { GetSalesByChannelUseCase } from "../analytics/GetSalesByChannelUseCase";

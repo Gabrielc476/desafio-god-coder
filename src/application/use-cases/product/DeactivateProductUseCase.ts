@@ -1,6 +1,6 @@
 import { Product } from '@/domain/entities/Product';
 import { IRepository } from '@/domain/repositories/IRepository';
-import { IDeactivateProductInput } from '@/application/dtos/IDeactivateProductInput';
+import { IDeactivateProductInput } from '@/application/dtos/product/IDeactivateProductInput';
 
 /**
  * Caso de uso para desativar um produto (Soft Delete).

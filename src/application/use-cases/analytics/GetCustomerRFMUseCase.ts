@@ -1,5 +1,5 @@
 import { IAnalyticsRepository } from "@/domain/repositories/IAnalyticsRepository";
-import { IGetCustomerRFMInput } from "../../dtos/IGetCustomerRFMInput";
+import { IGetCustomerRFMInput } from "../../dtos/analytics/IGetCustomerRFMInput";
 import { CustomerRFMDTO } from "@/domain/dtos/CustomerRFMDTO";
 
 /**

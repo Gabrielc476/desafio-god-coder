@@ -1,4 +1,4 @@
-import { IExplainDataInput } from "../../dtos/IExplainDataInput";
+import { IExplainDataInput } from "../../dtos/ai/IExplainDataInput";
 import { IAssistantService } from "@/domain/services/IAssistantService";
 
 /**

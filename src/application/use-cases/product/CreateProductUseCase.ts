@@ -1,6 +1,6 @@
 import { Product } from '@/domain/entities/Product';
 import { IRepository } from '@/domain/repositories/IRepository';
-import { ICreateProductInput } from '@/application/dtos/ICreateProductInput';
+import { ICreateProductInput } from '@/application/dtos/product/ICreateProductInput';
 
 /**
  * Caso de uso para criar um novo produto.

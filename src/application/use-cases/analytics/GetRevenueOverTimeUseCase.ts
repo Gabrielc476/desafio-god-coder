@@ -1,5 +1,5 @@
 import { IAnalyticsRepository, Granularity } from "@/domain/repositories/IAnalyticsRepository";
-import { IGetRevenueOverTimeInput } from "../../dtos/IGetRevenueOverTimeInput";
+import { IGetRevenueOverTimeInput } from "../../dtos/analytics/IGetRevenueOverTimeInput";
 
 // CORREÇÃO: Importado 'Granularity' em vez do nome errado 'RevenueOverTimeGranularity'
 
