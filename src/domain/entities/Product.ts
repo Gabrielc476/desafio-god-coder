@@ -1,7 +1,8 @@
-export class Product {
-  constructor(
-    public readonly id: number,
-    public readonly name: string,
-    public readonly price: number,
-  ) {}
+import { BaseEntity } from '../repositories/IRepository';
+
+export interface Product extends BaseEntity {
+  id: number;
+  name: string;
+  price: number;
+  active: boolean;
 }

@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Prisma usará a URL do banco a partir das variáveis de ambiente
+}
+
+// --- Modelos Base ---
+
+model Customer {
+  id     Int     @id @default(autoincrement())
+  name   String
+  orders Order[]
+
+  @@map("customers")
+}
+
+model Product {
+  id         Int         @id @default(autoincrement())
+  name       String
+  price      Decimal     @db.Decimal(10, 2)
+  active     Boolean     @default(true) // Campo para Soft Delete
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model Channel {
+  id     Int     @id @default(autoincrement())
+  name   String
+  orders Order[]
+
+  @@map("channels")
+}
+
+model PaymentType {
+  id     Int     @id @default(autoincrement())
+  name   String
+  orders Order[]
+
+  @@map("payment_types")
+}
+
+// --- Modelo Principal de Transação ---
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  total         Decimal     @db.Decimal(10, 2)
+  createdAt     DateTime    @default(now())
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  customerId    Int?        @map("customerId")
+  channel       Channel     @relation(fields: [channelId], references: [id])
+  channelId     Int         @map("channelId")
+  paymentType   PaymentType @relation(fields: [paymentTypeId], references: [id])
+  paymentTypeId Int         @map("paymentTypeId")
+  items         OrderItem[]
+
+  @@map("orders")
+}
+
+// --- Tabela de Junção (Muitos-para-Muitos) ---
+
+model OrderItem {
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int     @map("orderId")
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int     @map("productId")
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2) // Preço no momento da compra
+
+  @@id([orderId, productId])
+  @@map("order_items")
+}
