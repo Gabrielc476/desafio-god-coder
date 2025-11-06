@@ -1,16 +1,15 @@
 import { Redis } from 'ioredis';
 import { PgAnalyticsRepository } from '../database/PgAnalyticsRepository';
-import {
-  IAnalyticsRepository,
-  TopProductDTO,
-  RevenueOverTimeDTO,
-  SalesByChannelDTO,
-  OverallAverageTicketDTO,
-  SalesHeatmapDTO,
-  SalesByPaymentTypeDTO,
-  CustomerRFMDTO,
-  Granularity
-} from '@/domain/repositories/IAnalyticsRepository';
+import { IAnalyticsRepository, Granularity } from '@/domain/repositories/IAnalyticsRepository';
+
+// Importando os DTOs de seus novos locais
+import { TopProductDTO } from '@/domain/dtos/TopProductDTO';
+import { RevenueOverTimeDTO } from '@/domain/dtos/RevenueOverTimeDTO';
+import { SalesByChannelDTO } from '@/domain/dtos/SalesByChannelDTO';
+import { OverallAverageTicketDTO } from '@/domain/dtos/OverallAverageTicketDTO';
+import { SalesHeatmapDTO } from '@/domain/dtos/SalesHeatmapDTO';
+import { SalesByPaymentTypeDTO } from '@/domain/dtos/SalesByPaymentTypeDTO';
+import { CustomerRFMDTO } from '@/domain/dtos/CustomerRFMDTO';
 
 // Tempo de vida (TTL) do cache em segundos (ex: 1 hora)
 const CACHE_TTL_SECONDS = 3600;

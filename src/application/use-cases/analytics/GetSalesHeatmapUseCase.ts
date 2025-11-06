@@ -3,8 +3,10 @@ import { IGetSalesHeatmapInput } from "@/application/dtos/IGetSalesHeatmapInput"
 // 2. Importar o DTO de Output e a Interface (Contrato) do Domínio
 import {
   IAnalyticsRepository,
-  SalesHeatmapDTO
+  
 } from "@/domain/repositories/IAnalyticsRepository";
+
+import { SalesHeatmapDTO } from "@/domain/dtos/SalesHeatmapDTO";
 
 /**
  * Orquestra a lógica de negócio para buscar o heatmap de vendas (agrupado por hora e canal).

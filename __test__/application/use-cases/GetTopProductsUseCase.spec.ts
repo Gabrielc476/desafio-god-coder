@@ -1,6 +1,7 @@
 import { GetTopProductsUseCase } from '../../../src/application/use-cases/analytics/GetTopProductsUseCase';
 import { IGetTopProductsInput } from '../../../src/application/dtos/IGetTopProductsInput';
-import { IAnalyticsRepository, TopProductDTO } from '../../../src/domain/repositories/IAnalyticsRepository';
+import { IAnalyticsRepository } from '../../../src/domain/repositories/IAnalyticsRepository';
+import { TopProductDTO } from '../../../src/domain/dtos/TopProductDTO';
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 
 // --- CORREÇÃO ARQUITETURAL ---
@@ -70,4 +71,3 @@ describe('GetTopProductsUseCase', () => {
     expect(mockAnalyticsRepository.getTopSellingProducts).not.toHaveBeenCalled();
   });
 });
-

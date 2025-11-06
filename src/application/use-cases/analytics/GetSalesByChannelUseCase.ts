@@ -1,5 +1,7 @@
-import { IAnalyticsRepository, SalesByChannelDTO } from '@/domain/repositories/IAnalyticsRepository';
+import { IAnalyticsRepository } from '@/domain/repositories/IAnalyticsRepository';
 import { IGetSalesByChannelInput } from '../../dtos/IGetSalesByChannelInput';
+import { SalesByChannelDTO } from '@/domain/dtos/SalesByChannelDTO';
+
 
 /**
  * Orquestra a lógica de negócio para buscar as vendas por canal.

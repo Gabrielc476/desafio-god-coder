@@ -1,5 +1,6 @@
-import { IAnalyticsRepository, CustomerRFMDTO } from "@/domain/repositories/IAnalyticsRepository";
+import { IAnalyticsRepository } from "@/domain/repositories/IAnalyticsRepository";
 import { IGetCustomerRFMInput } from "../../dtos/IGetCustomerRFMInput";
+import { CustomerRFMDTO } from "@/domain/dtos/CustomerRFMDTO";
 
 /**
  * Orquestra a lógica de negócio para buscar a análise RFM (Recência, Frequência, Valor).

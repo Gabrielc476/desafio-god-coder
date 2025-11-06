@@ -1,80 +1,17 @@
 // Define o "contrato" de dados que a aplicação espera.
 // Não depende de nenhuma camada externa (ex: aplicação ou infra).
 
+import { CustomerRFMDTO } from '../dtos/CustomerRFMDTO';
+import { OverallAverageTicketDTO } from "../dtos/OverallAverageTicketDTO"
+import { RevenueOverTimeDTO } from '../dtos/RevenueOverTimeDTO';
+import { SalesByChannelDTO } from '../dtos/SalesByChannelDTO';
+import { SalesByPaymentTypeDTO } from '../dtos/SalesByPaymentTypeDTO';
+import { SalesHeatmapDTO } from '../dtos/SalesHeatmapDTO';
+import { TopProductDTO } from '../dtos/TopProductDTO';
+
 // O tipo Granularity é definido aqui, na camada de Domínio,
 // pois é usado pelo contrato da interface.
 export type Granularity = 'day' | 'week' | 'month';
-
-// --- DTOs (Data Transfer Objects) ---
-// Define a "forma" dos dados que fluem através dos limites das camadas.
-
-/**
- * DTO para o caso de uso "Top Produtos".
- */
-export type TopProductDTO = {
-  productId: number;
-  name: string;
-  totalSold: number;
-  totalRevenue: number;
-};
-
-/**
- * DTO para o caso de uso "Faturação Ao Longo do Tempo".
- */
-export type RevenueOverTimeDTO = {
-  date: Date;
-  totalRevenue: number;
-};
-
-/**
- * DTO para o caso de uso "Vendas por Canal".
- */
-export type SalesByChannelDTO = {
-  channelId: number;
-  channelName: string;
-  totalSales: number;
-  totalRevenue: number;
-};
-
-/**
- * DTO para o caso de uso "Ticket Médio Geral".
- */
-export type OverallAverageTicketDTO = {
-  averageTicket: number;
-  totalSales: number;
-};
-
-/**
- * DTO para o caso de uso "Heatmap de Vendas".
- */
-export type SalesHeatmapDTO = {
-  hour: number;
-  channelId: number;
-  channelName: string;
-  totalSales: number;
-  totalRevenue: number;
-};
-
-/**
- * DTO para o caso de uso "Vendas por Tipo de Pagamento".
- */
-export type SalesByPaymentTypeDTO = {
-  paymentTypeId: number;
-  paymentTypeName: string;
-  totalRevenue: number;
-  totalTransactions: number;
-};
-
-/**
- * DTO para o caso de uso "Análise de Clientes (RFM)".
- */
-export type CustomerRFMDTO = {
-  customerId: number;
-  customerName: string;
-  lastPurchaseDate: Date;
-  frequency: number;
-  monetaryValue: number;
-};
 
 // --- Interface do Repositório (O Contrato) ---
 
@@ -140,4 +77,3 @@ export interface IAnalyticsRepository {
     endDate: Date
   ): Promise<CustomerRFMDTO[]>;
 }
-

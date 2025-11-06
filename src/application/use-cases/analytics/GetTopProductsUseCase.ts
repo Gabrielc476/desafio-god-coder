@@ -1,8 +1,6 @@
 // Importamos o CONTRATO (Interface) do Domínio, não a implementação.
-import {
-  IAnalyticsRepository,
-  TopProductDTO,
-} from '@/domain/repositories/IAnalyticsRepository';
+import { IAnalyticsRepository } from '@/domain/repositories/IAnalyticsRepository';
+import { TopProductDTO } from '@/domain/dtos/TopProductDTO';
 import { IGetTopProductsInput } from '../../dtos/IGetTopProductsInput'; // Importado do novo local
 
 // A interface IGetTopProductsInput foi removida daqui
@@ -41,4 +39,3 @@ export class GetTopProductsUseCase {
     return topProducts;
   }
 }
-

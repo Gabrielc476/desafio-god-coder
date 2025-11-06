@@ -1,5 +1,7 @@
-import { IAnalyticsRepository, OverallAverageTicketDTO } from "@/domain/repositories/IAnalyticsRepository";
+import { IAnalyticsRepository } from "@/domain/repositories/IAnalyticsRepository";
 import { IGetOverallAverageTicketInput } from "@/application/dtos/IGetOverallAverageTicketInput";
+import { OverallAverageTicketDTO } from "@/domain/dtos/OverallAverageTicketDTO";
+
 
 /**
  * Orquestra a lógica de negócio para buscar o ticket médio geral.

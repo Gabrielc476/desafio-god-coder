@@ -1,5 +1,6 @@
-import { IAnalyticsRepository, SalesByPaymentTypeDTO } from "@/domain/repositories/IAnalyticsRepository";
+import { IAnalyticsRepository } from "@/domain/repositories/IAnalyticsRepository";
 import { IGetSalesByPaymentTypeInput } from "@/application/dtos/IGetSalesByPaymentTypeInput";
+import { SalesByPaymentTypeDTO } from "@/domain/dtos/SalesByPaymentTypeDTO";
 
 /**
  * Orquestra a lógica de negócio para buscar as vendas por tipo de pagamento.
