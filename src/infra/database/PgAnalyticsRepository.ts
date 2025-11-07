@@ -1,6 +1,4 @@
 import {
-  Granularity,
-  IAnalyticsRepository,
   TopProductDTO,
   RevenueOverTimeDTO,
   SalesByChannelDTO,
@@ -8,7 +6,8 @@ import {
   SalesHeatmapDTO,
   SalesByPaymentTypeDTO,
   CustomerRFMDTO,
-} from "@/domain/repositories/IAnalyticsRepository";
+} from "@/domain/dtos";
+import { Granularity, IAnalyticsRepository } from "@/domain/repositories/IAnalyticsRepository";
 import { db } from "./db"; // Importamos o nosso pool de conexão
 
 /**
