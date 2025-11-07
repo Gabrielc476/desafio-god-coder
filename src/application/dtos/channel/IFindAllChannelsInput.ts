@@ -3,6 +3,8 @@
  * (Não requer parâmetros).
  */
 export interface IFindAllChannelsInput {
-  // Esta interface pode ficar vazia
-  // ou pode receber parâmetros de paginação no futuro.
+  /**
+   * ID do restaurante para listar os canais.
+   */
+  restaurantId: string;
 }

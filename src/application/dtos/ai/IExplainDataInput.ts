@@ -4,6 +4,11 @@
  */
 export interface IExplainDataInput {
   /**
+   * ID do restaurante para filtrar o contexto.
+   */
+  restaurantId: string;
+
+  /**
    * O contexto para a IA (ex: "Top 10 Produtos", "Vendas por Canal").
    */
   dataContext: string;

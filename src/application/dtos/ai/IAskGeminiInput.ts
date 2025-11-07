@@ -6,6 +6,11 @@ import { ChatHistory } from "@/domain/services/IAssistantService";
  */
 export interface IAskGeminiInput {
   /**
+   * ID do restaurante para filtrar o contexto.
+   */
+  restaurantId: string;
+
+  /**
    * O prompt/pergunta atual do usuário (ex: "Qual meu top produto?").
    */
   prompt: string;
